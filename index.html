@@ -433,6 +433,7 @@ function toggleSb(){document.getElementById('sidebar').classList.toggle('open');
 function render(){renderNav();const R={dash:renderDash,quote:renderQuote,quote2:renderQuote2,share:renderShare,opp:renderOpp,sup:renderSup,contract:renderContract,delivery:renderDelivery,profit:renderProfit,commission:renderCommission,pay:renderPay,finance:renderFinance,invoice:renderInvoice,pending:renderPending,qcpage:renderQc,inbound:renderInbound,stock:renderStock,orders:renderOrders,audit:renderAudit,stats:renderStats};document.getElementById('main').innerHTML=R[state.page]();save();}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2400);}
 const bar=extra=>`<div class="pagebar"><h2>${TITLES[state.page]}</h2><span class="crumb">首页 &gt;&gt; ${TITLES[state.page]}</span><span class="spacer"></span>${extra}</div>`;
+const filters=inner=>`<div class="filter">${inner}</div>`;
 
 /* ================= 登录/角色 ================= */
 function login(r){state.role=r;state.page='dash';logAudit('登录系统','身份：'+ROLE_DEF[r].name+'（'+ROLE_DEF[r].title+'）');document.getElementById('login').classList.add('hide');render();toast(`欢迎，${ROLE_DEF[r].name}（${ROLE_DEF[r].title}）· 行级权限已按角色加载`);}
