@@ -428,7 +428,7 @@ function renderNav(){
   const todo=state.contracts.filter(c=>c.status==='待审').length+state.pending.length+state.inquiries.filter(x=>x.st==='未报价'&&x.status==='有效').length;
   document.getElementById('todoDot').textContent=todo;
 }
-function go(p){state.page=p;state.gFilter='';document.getElementById('gs').value='';render();if(window.innerWidth<=720){document.getElementById('sidebar').classList.remove('open');document.getElementById('sbMask').classList.remove('show');}}
+function go(p){state.page=p;state.gFilter='';document.getElementById('gs').value='';if(window.innerWidth<=720){document.getElementById('sidebar').classList.remove('open');document.getElementById('sbMask').classList.remove('show');}render();}
 function toggleSb(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sbMask').classList.toggle('show');}
 function render(){renderNav();const R={dash:renderDash,quote:renderQuote,quote2:renderQuote2,share:renderShare,opp:renderOpp,sup:renderSup,contract:renderContract,delivery:renderDelivery,profit:renderProfit,commission:renderCommission,pay:renderPay,finance:renderFinance,invoice:renderInvoice,pending:renderPending,qcpage:renderQc,inbound:renderInbound,stock:renderStock,orders:renderOrders,audit:renderAudit,stats:renderStats};document.getElementById('main').innerHTML=R[state.page]();save();}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2400);}
