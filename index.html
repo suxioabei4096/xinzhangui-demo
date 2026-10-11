@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>芯掌柜 · IC现货贸易ERP 演示版 v3</title>
+<meta name="description" content="芯掌柜 —— 电子元器件（IC）现货贸易一体化进销存与经营管理系统：询报价、采购比价、合同审批、品检入库、库存批次追溯、利润提成核算。">
+<meta property="og:title" content="芯掌柜 · IC现货贸易ERP">
+<meta property="og:description" content="询报价 → 采购比价 → 合同审批 → 品检入库 → 库存追溯 → 利润提成，IC 现货贸易一体化经营系统演示。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xinzhangui.geekdance.cn/">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<style>
+:root{
+  --nav:#1C2B3A; --nav-2:#24374d; --head:#2E6FBE; --head-d:#24599b;
+  --amber:#E8930C; --ok:#0E8A54; --danger:#C2372F; --info:#2E6FBE;
+  --bg:#EEF1F5; --card:#fff; --line:#dde3ea; --ink:#1f2733; --ink2:#5a6675; --ink3:#8b95a3;
+  --mono:"JetBrains Mono","SFMono-Regular",Consolas,"Courier New",monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;background:var(--bg);color:var(--ink);font-size:13px;height:100vh;overflow:hidden}
+/* ============ 登录层 ============ */
+#login{position:fixed;inset:0;background:linear-gradient(160deg,#16222f 0%,#1C2B3A 55%,#24405c 100%);display:flex;align-items:center;justify-content:center;z-index:200}
+#login.hide{display:none}
+.login-box{width:400px;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.login-head{background:var(--head);color:#fff;padding:26px 30px 22px}
+.login-head .brand{font-size:24px;font-weight:800;letter-spacing:3px;display:flex;align-items:center;gap:10px}
+.login-head p{margin-top:6px;font-size:12.5px;opacity:.85}
+.login-body{padding:24px 30px 28px}
+.role-btn{display:flex;align-items:center;gap:13px;width:100%;border:1.5px solid var(--line);border-radius:8px;padding:12px 15px;margin-bottom:11px;cursor:pointer;background:#fff;text-align:left;transition:.15s}
+.role-btn:hover{border-color:var(--head);background:#f4f8fd;transform:translateX(3px)}
+.role-btn .ra{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex:none}
+.role-btn b{font-size:14.5px;display:block}
+.role-btn span{font-size:12px;color:var(--ink3)}
+.login-foot{font-size:11.5px;color:var(--ink3);text-align:center;margin-top:4px}
+/* ============ 布局 ============ */
+.app{display:grid;grid-template-columns:200px 1fr;grid-template-rows:48px 34px 1fr;height:100vh}
+.topbar{grid-column:1/3;background:var(--head);display:flex;align-items:center;gap:14px;padding:0 14px;color:#fff}
+.brand{font-size:19px;font-weight:800;letter-spacing:2px;display:flex;align-items:center;gap:8px}
+.brand svg{width:20px;height:20px}
+.gsearch{flex:0 0 320px;position:relative}
+.gsearch input{width:100%;height:28px;border:none;border-radius:4px;padding:0 30px 0 30px;font-size:12.5px;background:rgba(255,255,255,.92);color:var(--ink)}
+.gsearch svg{position:absolute;left:9px;top:6px;width:15px;height:15px;color:var(--ink3)}
+.gsearch .kbd{position:absolute;right:8px;top:6px;font-size:10px;color:var(--ink3);font-family:var(--mono);border:1px solid var(--line);border-radius:3px;padding:0 4px}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.ticon{position:relative;width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:5px;cursor:pointer}
+.ticon:hover{background:rgba(255,255,255,.14)}
+.ticon svg{width:17px;height:17px}
+.ticon .dot{position:absolute;top:-5px;right:-8px;background:var(--danger);color:#fff;font-size:9.5px;border-radius:8px;padding:0 5px;line-height:15px;font-weight:700}
+.rolechip{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.14);border-radius:16px;padding:3px 10px 3px 3px;cursor:pointer}
+.rolechip:hover{background:rgba(255,255,255,.24)}
+.avatar{width:24px;height:24px;border-radius:50%;background:#f0b23e;color:#3c2c05;font-weight:800;font-size:11.5px;display:flex;align-items:center;justify-content:center}
+.rolechip b{font-size:12px}
+.tabbar{grid-column:2/3;background:#f6f8fb;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:2px;padding:0 8px;overflow-x:auto}
+.tab{padding:0 14px;line-height:33px;font-size:12.5px;color:var(--ink2);cursor:pointer;border-right:1px solid var(--line);white-space:nowrap;display:flex;gap:6px;align-items:center}
+.tab .x{color:var(--ink3);font-size:14px}
+.tab.active{background:#fff;color:var(--head);font-weight:700;box-shadow:inset 0 -2px 0 var(--head)}
+.sidebar{grid-row:2/4;background:var(--nav);color:#c7d3e0;overflow-y:auto;padding-bottom:30px}
+.sgroup{padding:10px 14px 4px;font-size:10.5px;color:#5f7488;letter-spacing:1px}
+.sitem{display:flex;align-items:center;gap:9px;padding:0 14px;height:36px;cursor:pointer;font-size:13px;border-left:3px solid transparent}
+.sitem svg{width:15px;height:15px;flex:none;opacity:.75}
+.sitem:hover{background:var(--nav-2)}
+.sitem.active{background:var(--nav-2);color:#fff;border-left-color:#f0b23e;font-weight:600}
+.sitem .badge{margin-left:auto;background:var(--danger);color:#fff;font-size:10px;border-radius:9px;padding:0 6px;line-height:16px;font-weight:700}
+.sitem .badge.amb{background:var(--amber)}
+.main{grid-row:3/4;overflow-y:auto;padding:16px 18px}
+.pagebar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.pagebar h2{font-size:16px;margin-right:6px}
+.crumb{color:var(--ink3);font-size:12px}
+.spacer{flex:1}
+.btn{height:27px;padding:0 13px;border:1px solid var(--line);background:#fff;border-radius:4px;font-size:12.5px;color:var(--ink2);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--head);color:var(--head)}
+.btn svg{width:13px;height:13px}
+.btn.pri{background:var(--head);border-color:var(--head);color:#fff;font-weight:600}
+.btn.pri:hover{background:var(--head-d)}
+.btn.warn{background:var(--amber);border-color:var(--amber);color:#fff;font-weight:600}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:600}
+.btn.danger{background:#fff;border-color:#e5b6b2;color:var(--danger)}
+.btn.sm{height:22px;padding:0 9px;font-size:11.5px}
+.filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.filter select,.filter input{height:27px;border:1px solid var(--line);border-radius:4px;background:#fff;font-size:12.5px;padding:0 8px;color:var(--ink2)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;margin-bottom:14px;overflow:hidden}
+.card-h{padding:8px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px;flex-wrap:wrap}
+.card-h .n{background:var(--danger);color:#fff;font-size:11px;border-radius:9px;padding:0 7px;line-height:17px}
+.card-h .hint{font-weight:400;color:var(--ink3);font-size:11.5px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{background:#f2f5f9;color:var(--ink);text-align:left;font-weight:600;padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:6px 10px;border-bottom:1px solid #edf0f4;color:var(--ink2);white-space:nowrap;vertical-align:middle}
+tr.row:hover td{background:#f4f8fd;cursor:pointer}
+tr.sel td{background:#fdf6e9}
+.num{font-family:var(--mono);text-align:right}
+td.num{color:var(--ink)}
+.code{font-family:var(--mono);color:var(--head);cursor:pointer}
+.tag{display:inline-block;font-size:11px;padding:0 8px;line-height:19px;border-radius:3px;white-space:nowrap;cursor:default}
+.tg-gray{background:#eceff3;color:var(--ink2)}
+.tg-blue{background:#e5effb;color:var(--head)}
+.tg-green{background:#e3f3ea;color:var(--ok)}
+.tg-amber{background:#fcf0dc;color:#a36905}
+.tg-red{background:#fbe7e5;color:var(--danger)}
+.mini{color:var(--ink3);font-size:11px}
+.empty{padding:28px;text-align:center;color:var(--ink3)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:6px;padding:12px 14px}
+.kpi .l{font-size:12px;color:var(--ink3)}
+.kpi .v{font-size:24px;font-weight:800;font-family:var(--mono);margin-top:2px}
+.kpi .v small{font-size:12px;font-weight:400;color:var(--ink3)}
+.kpi .d{font-size:11.5px;margin-top:2px}
+.up{color:var(--ok)}.down{color:var(--danger)}
+.bars{display:flex;align-items:flex-end;gap:14px;height:150px;padding:10px 6px 0}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+.bar .col{width:100%;max-width:46px;background:linear-gradient(180deg,#4a86c8,var(--head));border-radius:4px 4px 0 0}
+.bar .col.hot{background:linear-gradient(180deg,#f3b13e,var(--amber))}
+.bar .bv{font-family:var(--mono);font-size:11px;color:var(--ink2)}
+.bar .bl{font-size:11px;color:var(--ink3)}
+.kbar{display:flex;align-items:center;gap:10px;margin:9px 0}
+.kbar .kn{flex:0 0 170px;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kbar .kt{flex:1;height:14px;background:#edf0f4;border-radius:7px;overflow:hidden}
+.kbar .kf{height:100%;border-radius:7px}
+.kbar .kv{flex:0 0 56px;text-align:right;font-family:var(--mono);font-size:12px}
+.quote-panel{background:#fbfcfe;border-top:2px solid var(--amber)}
+.qrow{display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px dashed var(--line);flex-wrap:wrap}
+.qrow .qsup{flex:0 0 170px;font-weight:600}
+.qrow.best .qsup::after{content:"最低价";color:var(--ok);font-size:10px;border:1px solid var(--ok);border-radius:3px;padding:0 4px;margin-left:6px}
+#toast{position:fixed;top:60px;left:50%;transform:translateX(-50%) translateY(-16px);background:#22303f;color:#fff;padding:9px 20px;border-radius:6px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:99;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.modal-mask{position:fixed;inset:0;background:rgba(15,25,36,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.modal-mask.show{display:flex}
+.modal{background:#fff;border-radius:8px;width:520px;max-height:82vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal.wide{width:680px}
+.modal .mh{padding:13px 18px;border-bottom:1px solid var(--line);font-weight:700;font-size:14px;display:flex;align-items:center;position:sticky;top:0;background:#fff;z-index:2}
+.modal .mh .x{margin-left:auto;cursor:pointer;color:var(--ink3);font-size:18px;line-height:1}
+.modal .mb{padding:16px 18px}
+.modal .mf{padding:12px 18px;border-top:1px solid var(--line);text-align:right;display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:0;background:#fff}
+.frow{display:flex;margin-bottom:10px;align-items:center}
+.frow label{flex:0 0 92px;color:var(--ink2);font-size:12.5px}
+.frow input,.frow select{flex:1;height:29px;border:1px solid var(--line);border-radius:4px;padding:0 9px;font-size:13px}
+.tl{margin:6px 0 0 6px;border-left:2px solid var(--line);padding-left:16px}
+.tl .ti{position:relative;margin-bottom:14px}
+.tl .ti::before{content:"";position:absolute;left:-22px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--head);border:2px solid #fff;box-shadow:0 0 0 1px var(--head)}
+.tl .ti.done::before{background:var(--ok);box-shadow:0 0 0 1px var(--ok)}
+.tl .ti b{font-size:13px}
+.tl .ti .mini{display:block}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;font-size:12.5px}
+.grid2 .gl{color:var(--ink3)}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:#c3ccd7;border-radius:5px}::-webkit-scrollbar-track{background:transparent}
+/* 打印 */
+#printArea{display:none}
+@media print{
+  body{overflow:visible;height:auto}
+  .app,#toast,.modal-mask,#login{display:none!important}
+  #printArea{display:block;padding:20px}
+}
+@media(max-width:900px){.app{grid-template-columns:60px 1fr}.sitem span,.sgroup{display:none}.gsearch{flex:1}}
+</style>
+</head>
+<body>
+
+<!-- 登录层 -->
+<div id="login">
+  <div class="login-box">
+    <div class="login-head">
+      <div class="brand">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#f0b23e" stroke-width="2"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M9 7V4M12 7V4M15 7V4M9 20v-3M12 20v-3M15 20v-3M7 9H4M7 12H4M7 15H4M20 9h-3M20 12h-3M20 15h-3"/></svg>
+        芯掌柜
+      </div>
+      <p>IC 现货贸易一体化 ERP · 演示环境 v2 · 请选择身份进入</p>
+    </div>
+    <div class="login-body">
+      <button class="role-btn" onclick="login('boss')"><span class="ra" style="background:#e5effb;color:var(--head)">罗</span><span><b>罗志远 · 总经理</b><span>全权限：审批 / 付款 / 提成 / 经营看板</span></span></button>
+      <button class="role-btn" onclick="login('buyer')"><span class="ra" style="background:#fcf0dc;color:#a36905">曹</span><span><b>曹珏 · 采购主管</b><span>报价 / 采购合同 / 供应商 / 仓库全流程</span></span></button>
+      <button class="role-btn" onclick="login('sales')"><span class="ra" style="background:#e3f3ea;color:var(--ok)">伍</span><span><b>伍梅花 · 销售</b><span>客户询报价 / 共享货源 / 交期对比（只读）</span></span></button>
+      <button class="role-btn" onclick="login('fin')"><span class="ra" style="background:#fbe7e5;color:var(--danger)">陈</span><span><b>陈会计 · 财务</b><span>应付应收 / 发票核销 / 付款查看</span></span></button>
+      <div class="login-foot">演示数据本地保存 · 支持在右上角头像处切换身份或重置数据</div>
+    </div>
+  </div>
+</div>
+
+<!-- 主应用 -->
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#f0b23e" stroke-width="2"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M9 7V4M12 7V4M15 7V4M9 20v-3M12 20v-3M15 20v-3M7 9H4M7 12H4M7 15H4M20 9h-3M20 12h-3M20 15h-3"/></svg>
+      芯掌柜
+    </div>
+    <div class="gsearch">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="gs" placeholder="搜索型号 / 单号，如 ICM-42688-P" oninput="globalSearch(this.value)">
+      <span class="kbd">/</span>
+    </div>
+    <div class="top-right">
+      <div class="ticon" title="待办"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dot" id="todoDot">9</span></div>
+      <div class="ticon" title="消息"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg><span class="dot">99+</span></div>
+      <div class="rolechip" onclick="openRoleModal()" id="roleChip"></div>
+    </div>
+  </div>
+  <div class="tabbar" id="tabbar"></div>
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main" id="main"></div>
+</div>
+
+<div id="toast"></div>
+<div class="modal-mask" id="mask"><div class="modal" id="modal"></div></div>
+<div id="printArea"></div>
+
+<script>
+/* ================= 常量与数据 ================= */
+const KEY='xzg_demo_v2';
+const MARKUP=1.15;
+const ROLE_DEF={
+  boss:{name:'罗志远',title:'总经理',perm:['all']},
+  buyer:{name:'曹珏',title:'采购主管',perm:['quote','contract','inbound','payreq']},
+  sales:{name:'伍梅花',title:'销售',perm:['quote']},
+  fin:{name:'陈会计',title:'财务',perm:['finance','invoice','payview']},
+};
+const fmt=n=>n.toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:4});
+const today=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return String(d.getFullYear()).slice(2)+p(d.getMonth()+1)+p(d.getDate());};
+
+const state={
+  page:'dash', contractsTab:'草拟', gFilter:'', selInquiry:null, seq:{rk:144,cg:260928072,pay:2,th:1},
+  inquiries:[
+    {id:1,no:'E26092060',status:'有效',sales:'王泓元',model:'AD7682BCPZRL7',brand:'ADI',qty:2000,tax:0,target:0,quote:53.56,pkg:'LFCSP',dc:'',st:'已报价',quotes:[{sup:'世康电子',price:48.20,qty:2000,batch:'25+',lead:'4周'},{sup:'泓泽泰电子',price:51.00,qty:3000,batch:'24+',lead:'2周'}]},
+    {id:2,no:'E26092060',status:'有效',sales:'王泓元',model:'ADM2483BRWZ',brand:'ADI',qty:2000,tax:0,target:0,quote:19.57,pkg:'SOL-16',dc:'',st:'已报价',quotes:[{sup:'世康电子',price:17.10,qty:2000,batch:'25+',lead:'3周'}]},
+    {id:3,no:'E26092060',status:'有效',sales:'王泓元',model:'STM32F103C8T6',brand:'ST',qty:2000,tax:0,target:0,quote:5.665,pkg:'LQFP-48',dc:'',st:'已报价',quotes:[{sup:'天地昆',price:5.10,qty:5000,batch:'25+',lead:'2周'}]},
+    {id:4,no:'E26092060',status:'有效',sales:'王泓元',model:'TP1282L1-SR',brand:'3PEAK',qty:48000,tax:0,target:0,quote:1.225,pkg:'SOT-23-5',dc:'',st:'已报价',quotes:[{sup:'泓泽泰电子',price:1.08,qty:48000,batch:'26+',lead:'3周'}]},
+    {id:5,no:'E26092060',status:'有效',sales:'王泓元',model:'ADUM1250ARZ',brand:'ADI',qty:5000,tax:0,target:0,quote:16.30,pkg:'SOIC-8',dc:'',st:'已报价',quotes:[]},
+    {id:6,no:'E26092060',status:'有效',sales:'王泓元',model:'STM32F030F4P6',brand:'ST',qty:10000,tax:0,target:0,quote:3.03,pkg:'TSSOP-20',dc:'',st:'未报价',quotes:[]},
+    {id:7,no:'E26092060',status:'有效',sales:'王泓元',model:'AD8541ARTZ-REEL',brand:'ADI',qty:2000,tax:0,target:0,quote:4.65,pkg:'SOT-23-5',dc:'',st:'未报价',quotes:[]},
+    {id:8,no:'E26092800',status:'无效',sales:'伍梅花',model:'V07F17AHT03T',brand:'littlefuse',qty:2000,tax:0,target:0,quote:0,pkg:'—',dc:'',st:'未报价',quotes:[]},
+    {id:9,no:'E26092801',status:'有效',sales:'赵智强',model:'BCV47 E6327',brand:'infineon',qty:22000,tax:0,target:0,quote:2.60,pkg:'SOT-23',dc:'22+',st:'未报价',quotes:[{sup:'世康电子',price:1.80,qty:36000,batch:'22',lead:'2周'},{sup:'泓泽泰电子',price:1.80,qty:24000,batch:'22+',lead:'1周'},{sup:'天地昆',price:10.00,qty:41505,batch:'22+',lead:'现货'}]},
+    {id:10,no:'E26092802',status:'有效',sales:'伍梅花',model:'ICM-42688-P',brand:'TDK',qty:500,tax:0,target:95.00,quote:0,pkg:'LGA-14',dc:'26+',st:'未报价',quotes:[{sup:'深圳市盛鑫弘辉电子',price:87.00,qty:600,batch:'26+',lead:'现货'},{sup:'立创商城',price:91.50,qty:120,batch:'26+',lead:'现货'}]},
+  ],
+  contracts:[
+    {no:'HT260928062',model:'REF5025AQDRQ1',brand:'TI',pkg:'SOIC-8',qty:5000,done:0,price:124.30,cur:'RMB',tax:13,sales:'伍梅花',buyer:'曹珏',due:'2026-09-28',status:'草拟',log:[['草拟创建','曹珏 2026-09-26 10:21']]},
+    {no:'HT260922013',model:'QX0631-CUH-SH',brand:'NQUNXIN(群芯微电子)',pkg:'SOP-8',qty:20000,done:10000,price:1.90,cur:'RMB',tax:13,sales:'赵智强',buyer:'曹珏',due:'2026-10-08',status:'草拟',log:[['草拟创建','曹珏 2026-09-22 14:03']]},
+    {no:'HT260925006',model:'BCV47 E6327',brand:'infineon',pkg:'SOT-23',qty:36000,done:0,price:1.80,cur:'RMB',tax:13,sales:'赵智强',buyer:'曹珏',due:'2026-10-15',status:'待审',log:[['草拟创建','曹珏 2026-09-25 09:12'],['提交审批','曹珏 2026-09-25 09:30']]},
+    {no:'HT260921077',model:'TP1282L1-SR',brand:'3PEAK',pkg:'SOT-23-5',qty:48000,done:0,price:1.08,cur:'RMB',tax:13,sales:'王泓元',buyer:'曹珏',due:'2026-10-20',status:'待审',log:[['草拟创建','曹珏 2026-09-21 16:44'],['提交审批','曹珏 2026-09-21 17:02']]},
+    {no:'CG260928071',model:'ICM-42688-P',brand:'TDK',pkg:'LGA-14',qty:5,done:0,price:87.00,cur:'RMB',tax:0,sales:'伍梅花',buyer:'曹珏',due:'2026-09-28',status:'已审',log:[['草拟创建','曹珏 2026-09-28 08:50'],['提交审批','曹珏 2026-09-28 09:02'],['审批通过','罗志远 2026-09-28 09:15']]},
+    {no:'CG260928001',model:'QX0631-CUH-SH',brand:'NQUNXIN(群芯微电子)',pkg:'SOP-8',qty:10000,done:0,price:1.75,cur:'RMB',tax:13,sales:'赵智强',buyer:'曹珏',due:'2026-09-28',status:'已审',log:[['草拟创建','曹珏 2026-09-28 08:31'],['提交审批','曹珏 2026-09-28 08:40'],['审批通过','罗志远 2026-09-28 08:47']]},
+    {no:'CG260924142',model:'MMBT3904-7-F',brand:'DIODES(美台)',pkg:'SOT-23',qty:1005,done:1005,price:0.2830,cur:'RMB',tax:13,sales:'伍梅花',buyer:'曹珏',due:'2026-09-24',status:'已审',log:[['草拟创建','曹珏 2026-09-24 10:11'],['提交审批','曹珏 2026-09-24 10:20'],['审批通过','罗志远 2026-09-24 11:05'],['全部入库','蒙菊 2026-09-24 15:40']]},
+    {no:'CG260924036',model:'XL-5050RGBC-2812B',brand:'XINGLIGHT(成兴光)',pkg:'SMD5050-4P',qty:36010,done:0,price:0.1680,cur:'RMB',tax:13,sales:'赵智强',buyer:'曹珏',due:'2026-09-30',status:'未到货',log:[['草拟创建','曹珏 2026-09-24 09:02'],['提交审批','曹珏 2026-09-24 09:15'],['审批通过','罗志远 2026-09-24 09:58']]},
+    {no:'CG260924003',model:'TL431BIDBZR',brand:'TI',pkg:'SOT-23-3',qty:3000,done:3000,price:0.20,cur:'RMB',tax:0,sales:'伍梅花',buyer:'曹珏',due:'2026-09-24',status:'未到货',log:[['草拟创建','曹珏 2026-09-24 08:40'],['提交审批','曹珏 2026-09-24 08:52'],['审批通过','罗志远 2026-09-24 09:10']]},
+  ],
+  pending:[
+    {id:1,contract:'CG260928071',model:'ICM-42688-P',brand:'TDK',sup:'深圳市盛鑫弘辉电子',type:'需求合同',qty:5,qc:false},
+    {id:2,contract:'CG260928001',model:'QX0631-CUH-SH',brand:'NQUNXIN(群芯微电子)',sup:'深圳市图威创电子有限公司',type:'需求合同',qty:10000,qc:false},
+    {id:3,contract:'CG260924036',model:'XL-5050RGBC-2812B',brand:'XINGLIGHT(成兴光)',sup:'立创商城',type:'重点质检合同',qty:36010,qc:true},
+    {id:4,contract:'CG260924142',model:'MMBT3904-7-F',brand:'DIODES(美台)',sup:'圣禾堂(深圳)电子科技有限公司',type:'需求合同',qty:1005,qc:false},
+  ],
+  inbound:[
+    {no:'RK26092800143',sup:'立创商城(正在使用)',type:'需求合同',wh:'深圳仓库',buyer:'曹珏',reg:'蒙菊',date:'2026-09-28',status:'已入仓'},
+    {no:'RK26092800142',sup:'立创商城(正在使用)',type:'需求合同',wh:'深圳仓库',buyer:'曹珏',reg:'蒙菊',date:'2026-09-28',status:'已入仓'},
+    {no:'RK26092800101',sup:'立创商城(正在使用)',type:'需求合同',wh:'深圳仓库',buyer:'曹珏',reg:'蒙菊',date:'2026-09-28',status:'已入仓'},
+    {no:'RK26092000058',sup:'深圳市经纬纳科技有限公司',type:'重点质检合同',wh:'深圳仓库',buyer:'曹珏',reg:'蒙菊',date:'2026-09-20',status:'品检中'},
+  ],
+  stock:[
+    {model:'MMBT3904-7-F',brand:'DIODES(美台)',pkg:'SOT-23',lot:'26+',qty:881,wh:'深圳仓库',ref:'RK260924142',contract:'CG260924142',price:0.2830},
+    {model:'TL431BIDBZR',brand:'TI',pkg:'SOT-23-3',lot:'26+',qty:3000,wh:'深圳仓库',ref:'RK260924003',contract:'CG260924003',price:0.20},
+    {model:'BC856B,215',brand:'安世',pkg:'SOT-23',lot:'26+',qty:394,wh:'深圳仓库',ref:'RK260923098',contract:'CG260923098',price:0.3390},
+    {model:'TPAL0220F2R00K9',brand:'RESI(开步睿思)',pkg:'TO-220',lot:'26+',qty:482,wh:'深圳仓库',ref:'RK260923096',contract:'CG260923096',price:12.44},
+    {model:'BAS28',brand:'GOODWORK(固得沃克)',pkg:'SOT-143',lot:'26+',qty:255,wh:'深圳仓库',ref:'RK260924055',contract:'CG260924055',price:0.1360},
+    {model:'QX0631-CUH-SH',brand:'NQUNXIN(群芯微电子)',pkg:'SOP-8',lot:'26+',qty:10000,wh:'深圳仓库',ref:'RK260928001',contract:'CG260928001',price:1.7500},
+  ],
+  suppliers:[
+    {name:'世康电子',type:'国内贸易商',kpi:92,deals:186,ontime:96,defect:0.8,status:'在用'},
+    {name:'泓泽泰电子',type:'国内贸易商',kpi:88,deals:142,ontime:93,defect:1.2,status:'在用'},
+    {name:'天地昆',type:'国内贸易商',kpi:61,deals:37,ontime:78,defect:6.5,status:'观察'},
+    {name:'立创商城',type:'自营商城',kpi:97,deals:512,ontime:99,defect:0.1,status:'在用'},
+    {name:'圣禾堂(深圳)电子科技',type:'国内贸易商',kpi:90,deals:233,ontime:95,defect:0.6,status:'在用'},
+    {name:'深圳市鑫鑫弘辉电子',type:'国内贸易商',kpi:73,deals:45,ontime:82,defect:3.1,status:'观察'},
+  ],
+  deliveries:[
+    {model:'REF5025AQDRQ1',sup:'世康电子',promised:28,actual:35,note:'晚7天，上游缺货'},
+    {model:'ADM2483BRWZ',sup:'泓泽泰电子',promised:21,actual:20,note:'提前1天'},
+    {model:'STM32F103C8T6',sup:'天地昆',promised:14,actual:14,note:'准时'},
+    {model:'TP1282L1-SR',sup:'泓泽泰电子',promised:21,actual:26,note:'晚5天'},
+    {model:'BCV47 E6327',sup:'世康电子',promised:14,actual:12,note:'提前2天'},
+    {model:'MMBT3904-7-F',sup:'圣禾堂(深圳)电子科技',promised:7,actual:7,note:'准时'},
+    {model:'XL-5050RGBC-2812B',sup:'立创商城',promised:3,actual:3,note:'准时'},
+    {model:'ICM-42688-P',sup:'深圳市盛鑫弘辉电子',promised:2,actual:6,note:'晚4天，重点跟踪'},
+  ],
+  pays:[
+    {no:'YF260928001',contract:'CG260928071',sup:'深圳市盛鑫弘辉电子',type:'预付款',amount:43500,status:'待审批',by:'曹珏',date:'2026-09-28'},
+    {no:'HK260925003',contract:'CG260924142',sup:'圣禾堂(深圳)电子科技',type:'货款',amount:284.42,status:'已付款',by:'曹珏',date:'2026-09-25'},
+    {no:'HK260924002',contract:'CG260924003',sup:'TI授权代理(深圳)',type:'货款',amount:600,status:'已付款',by:'曹珏',date:'2026-09-24'},
+  ],
+  salesPrice:{},
+  orders:[
+    {no:'XS260928003',customer:'深圳市华辰电子',model:'MMBT3904-7-F',qty:500,price:0.42,cost:0.2830,status:'待出库'},
+    {no:'XS260927001',customer:'东莞蓝海科技',model:'TL431BIDBZR',qty:1000,price:0.30,cost:0.20,status:'待出库'},
+    {no:'XS260925001',customer:'苏州明讯科技',model:'BC856B,215',qty:300,price:0.51,cost:0.3390,status:'已出库'},
+    {no:'XS260924002',customer:'深圳市华辰电子',model:'BAS28',qty:200,price:0.22,cost:0.1360,status:'已出库'},
+  ],
+  qcRecords:[
+    {contract:'CG26092000058',model:'AMS1117-3.3',sup:'深圳市经纬纳科技有限公司',result:'合格',by:'蒙菊',date:'2026-09-20',note:'重点质检：外观/丝印/批号核验通过'},
+  ],
+  invoices:[
+    {no:'FP260925001',contract:'CG260924142',sup:'圣禾堂(深圳)电子科技',type:'增值税专票',amount:284.42,date:'2026-09-25'},
+  ],
+  ap:[
+    {sup:'世康电子',amt:186540,aging:'0-30'},
+    {sup:'泓泽泰电子',amt:92300,aging:'31-60'},
+    {sup:'深圳市经纬纳科技有限公司',amt:45800,aging:'60+'},
+    {sup:'天地昆',amt:12400,aging:'0-30'},
+  ],
+  ar:[
+    {cust:'深圳市华辰电子',amt:242000,aging:'0-30'},
+    {cust:'东莞蓝海科技',amt:86700,aging:'0-30'},
+    {cust:'苏州明讯科技',amt:153000,aging:'31-60'},
+  ],
+  shared:[
+    {model:'STM32F103C8T6',brand:'ST',price:4.85,qty:8000,batch:'25+',lead:'现货',by:'赵智强',date:'2026-09-27'},
+    {model:'TPS5430DDA',brand:'TI',price:2.35,qty:12000,batch:'26+',lead:'2周',by:'伍梅花',date:'2026-09-26'},
+    {model:'W25Q128JVSIQ',brand:'华邦',price:3.92,qty:5000,batch:'26+',lead:'3周',by:'曹珏',date:'2026-09-25'},
+  ],
+  returns:[
+    {no:'TH260922001',contract:'CG26092000058',model:'AMS1117-3.3',sup:'深圳市经纬纳科技有限公司',qty:200,reason:'品检不合格：丝印打磨疑似翻新',date:'2026-09-22',status:'已退货'},
+  ],
+  audit:[],
+};
+state.role=null;
+
+/* ================= 图标 ================= */
+const I={
+  grid:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
+  quote:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 8.5-8.5 8.38 8.38 0 0 1 8.5 8.5z"/></svg>',
+  sup:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+  doc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>',
+  box:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12"/></svg>',
+  chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>',
+  coin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5c0-1 1-1.7 2.5-1.7s2.5.7 2.5 1.7-1 1.5-2.5 1.9-2.5.9-2.5 1.9 1 1.7 2.5 1.7 2.5-.7 2.5-1.7"/></svg>',
+  truck:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="M22 4 12 14.01l-3-3"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>',
+  down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/></svg>',
+};
+const has=p=>ROLE_DEF[state.role].perm.includes('all')||ROLE_DEF[state.role].perm.includes(p);
+
+/* ================= 导航 ================= */
+const NAV=[
+  {g:'快捷'},
+  {k:'dash',n:'工作台',ic:I.grid,roles:['boss','buyer','sales']},
+  {g:'报价管理'},
+  {k:'quote',n:'报价：按型号',ic:I.quote,roles:['boss','buyer','sales'],b:()=>state.inquiries.filter(x=>x.st==='未报价'&&x.status==='有效').length},
+  {k:'quote2',n:'报价：按单',ic:I.doc,roles:['boss','buyer','sales']},
+  {k:'share',n:'共享报价',ic:I.quote,roles:['boss','buyer','sales'],b:()=>state.shared.filter(s=>!s.claimed).length},
+  {k:'opp',n:'采购商机',ic:I.chart,roles:['boss','buyer','sales'],b:()=>oppRows().length},
+  {g:'采购管理'},
+  {k:'sup',n:'供应商管理',ic:I.sup,roles:['boss','buyer']},
+  {k:'contract',n:'采购合同',ic:I.doc,roles:['boss','buyer'],b:()=>state.contracts.filter(c=>c.status==='待审').length},
+  {k:'delivery',n:'交期对比',ic:I.clock,roles:['boss','buyer','sales']},
+  {k:'profit',n:'采购利润',ic:I.coin,roles:['boss','buyer']},
+  {k:'commission',n:'采购提成',ic:I.coin,roles:['boss']},
+  {k:'pay',n:'付款管理',ic:I.coin,roles:['boss','buyer','fin'],b:()=>state.pays.filter(p=>p.status==='待审批').length},
+  {g:'财务管理'},
+  {k:'finance',n:'应付应收',ic:I.coin,roles:['boss','fin']},
+  {k:'invoice',n:'采购发票',ic:I.doc,roles:['boss','fin'],b:()=>missInvoices().length},
+  {g:'销售管理'},
+  {k:'orders',n:'销售出库',ic:I.doc,roles:['boss','buyer','sales'],b:()=>state.orders.filter(o=>o.status==='待出库').length},
+  {g:'仓库管理'},
+  {k:'pending',n:'待入库',ic:I.truck,roles:['boss','buyer'],b:()=>state.pending.length},
+  {k:'qcpage',n:'品检管理',ic:I.check,roles:['boss','buyer']},
+  {k:'inbound',n:'入库管理',ic:I.check,roles:['boss','buyer']},
+  {k:'stock',n:'库存查询',ic:I.box,roles:['boss','buyer','sales']},
+  {g:'经营'},
+  {k:'stats',n:'统计分析',ic:I.chart,roles:['boss']},
+  {k:'audit',n:'审计日志',ic:I.check,roles:['boss']},
+];
+const TITLES={dash:'工作台',quote:'报价：按型号',quote2:'报价：按单',share:'共享报价',opp:'采购商机',sup:'供应商管理',contract:'采购合同',delivery:'交期对比',profit:'采购利润',commission:'采购提成',pay:'付款管理',finance:'应付应收',invoice:'采购发票',pending:'待入库',qcpage:'品检管理',inbound:'入库管理',stock:'库存查询',orders:'销售出库',audit:'审计日志',stats:'统计分析'};
+
+function renderNav(){
+  document.getElementById('sidebar').innerHTML=NAV.map(x=>x.g?`<div class="sgroup">${x.g}</div>`:
+    (x.roles.includes(state.role)?`<div class="sitem ${state.page===x.k?'active':''}" onclick="go('${x.k}')">${x.ic}<span>${x.n}</span>${x.b?`<span class="badge ${x.k==='contract'?'':'amb'}">${x.b()}</span>`:''}</div>`:'')).join('');
+  document.getElementById('tabbar').innerHTML=`<div class="tab" onclick="go('dash')">首页</div>`+(state.page!=='dash'?`<div class="tab active">${TITLES[state.page]}<span class="x" onclick="event.stopPropagation();go('dash')">×</span></div>`:'');
+  const r=ROLE_DEF[state.role];
+  document.getElementById('roleChip').innerHTML=`<span class="avatar">${r.name[0]}</span><b>${r.name} · ${r.title}</b>`;
+  const todo=state.contracts.filter(c=>c.status==='待审').length+state.pending.length+state.inquiries.filter(x=>x.st==='未报价'&&x.status==='有效').length;
+  document.getElementById('todoDot').textContent=todo;
+}
+function go(p){state.page=p;state.gFilter='';document.getElementById('gs').value='';render();}
+function render(){renderNav();const R={dash:renderDash,quote:renderQuote,quote2:renderQuote2,share:renderShare,opp:renderOpp,sup:renderSup,contract:renderContract,delivery:renderDelivery,profit:renderProfit,commission:renderCommission,pay:renderPay,finance:renderFinance,invoice:renderInvoice,pending:renderPending,qcpage:renderQc,inbound:renderInbound,stock:renderStock,orders:renderOrders,audit:renderAudit,stats:renderStats};document.getElementById('main').innerHTML=R[state.page]();save();}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2400);}
+const bar=extra=>`<div class="pagebar"><h2>${TITLES[state.page]}</h2><span class="crumb">首页 &gt;&gt; ${TITLES[state.page]}</span><span class="spacer"></span>${extra}</div>`;
+
+/* ================= 登录/角色 ================= */
+function login(r){state.role=r;state.page='dash';logAudit('登录系统','身份：'+ROLE_DEF[r].name+'（'+ROLE_DEF[r].title+'）');document.getElementById('login').classList.add('hide');render();toast(`欢迎，${ROLE_DEF[r].name}（${ROLE_DEF[r].title}）· 行级权限已按角色加载`);}
+function logout(){localStorage.removeItem(KEY);location.reload();}
+function openRoleModal(){
+  openModal('身份与数据',`<p class="mini" style="margin-bottom:12px">当前身份：${ROLE_DEF[state.role].name} · ${ROLE_DEF[state.role].title}。切换身份将按新角色重新加载权限视图。</p>`+
+    Object.keys(ROLE_DEF).map(k=>`<button class="role-btn" onclick="switchRole('${k}')"><span class="ra" style="background:#e5effb;color:var(--head)">${ROLE_DEF[k].name[0]}</span><span><b>${ROLE_DEF[k].name} · ${ROLE_DEF[k].title}</b><span>${ROLE_DEF[k].perm.includes('all')?'全权限':'权限：'+ROLE_DEF[k].perm.join(' / ')}</span></span></button>`).join(''),
+    `<button class="btn danger" onclick="closeModal();openResetModal()">重置演示数据</button><button class="btn" onclick="closeModal()">关闭</button>`,true);
+}
+function openResetModal(){
+  openModal('重置演示数据','<p>将清除本机保存的全部演示操作（审批、入库、报价记录），恢复初始演示数据并回到登录页。此操作不可撤销。</p>',
+  `<button class="btn" onclick="closeModal()">取消</button><button class="btn danger" onclick="logout()">确认重置</button>`);
+}
+function switchRole(k){state.role=k;state.page='dash';closeModal();render();toast(`已切换为 ${ROLE_DEF[k].name}（${ROLE_DEF[k].title}）`);}
+
+/* ================= 持久化 ================= */
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify({role:state.role,inquiries:state.inquiries,contracts:state.contracts,pending:state.pending,inbound:state.inbound,stock:state.stock,suppliers:state.suppliers,deliveries:state.deliveries,pays:state.pays,salesPrice:state.salesPrice,seq:state.seq}));}catch(e){}
+}
+function logAudit(action,detail){
+  state.audit=state.audit||[];
+  state.audit.unshift({t:new Date().toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}),u:ROLE_DEF[state.role].name,a:action,d:detail||''});
+  if(state.audit.length>200)state.audit.length=200;
+}
+(function boot(){
+  try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.role){Object.assign(state,d);state.role=d.role;document.getElementById('login').classList.add('hide');render();toast('已恢复上次演示状态 · 头像菜单可重置数据');return;}}catch(e){}
+})();
+
+/* ================= 工作台 ================= */
+function renderDash(){
+  const unq=state.inquiries.filter(x=>x.st==='未报价'&&x.status==='有效').length;
+  const draft=state.contracts.filter(c=>c.status==='草拟').length;
+  const wait=state.contracts.filter(c=>c.status==='待审').length;
+  const pend=state.pending.length, payw=state.pays.filter(p=>p.status==='待审批').length;
+  return `<div class="pagebar"><h2>工作台</h2><span class="crumb">${ROLE_DEF[state.role].name}，您好 · ${new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'long'})}</span><span class="spacer"></span>
+    ${has('quote')?`<button class="btn pri" onclick="toast('演示版：请在「报价：按型号」页导入客户需求')">${I.doc} 导入客户需求</button>`:''}</div>
+  <div class="kpis">
+    <div class="kpi"><div class="l">待报价询价行</div><div class="v" style="color:var(--amber)">${unq}<small> 行</small></div><div class="d down">较昨日 +3</div></div>
+    <div class="kpi"><div class="l">本月已审采购额</div><div class="v">¥ 1,286,540</div><div class="d up">较上月 +12.4%</div></div>
+    <div class="kpi"><div class="l">本月采购毛利(估)</div><div class="v" style="color:var(--ok)">¥ 216,902</div><div class="d up">毛利率 16.9%</div></div>
+    <div class="kpi"><div class="l">待入库 / 待审批付款</div><div class="v" style="color:var(--danger)">${pend}<small> 单</small> / ${payw}</div><div class="d">含重点质检 1 单</div></div>
+  </div>
+  <div class="card"><div class="card-h">我的待办<span class="hint">点击直达对应模块（按当前角色权限显示）</span></div><table>
+    <tr><th>事项</th><th class="num">数量</th><th>说明</th><th></th></tr>
+    ${has('quote')?`<tr class="row" onclick="go('quote')"><td>未报价客户询价</td><td class="num" style="color:var(--amber);font-weight:700">${unq}</td><td>含 E26092060 整单 2 行未回复</td><td><span class="tag tg-blue">去报价</span></td></tr>`:''}
+    ${has('contract')?`<tr class="row" onclick="go('contract')"><td>待审批采购合同</td><td class="num" style="color:var(--danger);font-weight:700">${wait}</td><td>超 24h 未审将影响交期</td><td><span class="tag tg-red">去审批</span></td></tr>
+    <tr class="row" onclick="go('contract')"><td>草拟中合同</td><td class="num">${draft}</td><td>完成条款后提交审批</td><td><span class="tag tg-gray">继续编辑</span></td></tr>
+    <tr class="row" onclick="go('pending')"><td>待收货入库</td><td class="num" style="color:var(--amber);font-weight:700">${pend}</td><td>重点质检合同需品检后入库</td><td><span class="tag tg-amber">去收货</span></td></tr>`:''}
+    ${has('all')?`<tr class="row" onclick="go('pay')"><td>待审批付款申请</td><td class="num" style="color:var(--danger);font-weight:700">${payw}</td><td>预付款占用供应商信用额度</td><td><span class="tag tg-red">去审批</span></td></tr>`:''}
+    ${has('finance')?`<tr class="row" onclick="go('invoice')"><td>缺票合同待收票</td><td class="num" style="color:var(--danger);font-weight:700">${missInvoices().length}</td><td>已付款未收票，影响进项抵扣</td><td><span class="tag tg-red">去核销</span></td></tr>
+    <tr class="row" onclick="go('finance')"><td>应付账款在途</td><td class="num" style="color:var(--amber);font-weight:700">${(state.ap||[]).length}</td><td>应付总额 ¥ ${fmt((state.ap||[]).reduce((s,a)=>s+a.amt,0))}，含 60 天以上 1 笔</td><td><span class="tag tg-amber">去查看</span></td></tr>`:''}
+  </table></div>
+  <div class="card"><div class="card-h">采购报价趋势 · 近七日询单量</div><div class="bars">
+    ${[42,55,38,61,73,58,49].map((v,i)=>`<div class="bar"><span class="bv">${v}</span><div class="col ${i===4?'hot':''}" style="height:${v/73*100}%"></div><span class="bl">${['一','二','三','四','五','六','日'][i]}</span></div>`).join('')}
+  </div><div style="padding:8px 12px" class="mini">峰值出现在周四：E26092060 整单 8 行集中询价</div></div>`;
+}
+
+/* ================= 报价：按型号 ================= */
+function renderQuote(){
+  const gf=state.gFilter.toLowerCase();
+  const rows=state.inquiries.filter(r=>!gf||(r.model+r.brand+r.no).toLowerCase().includes(gf));
+  const unq=state.inquiries.filter(x=>x.st==='未报价'&&x.status==='有效').length;
+  return bar(`<button class="btn" onclick="exportCSV('quote')">${I.down} 导出客户需求 Excel</button>
+    <button class="btn" onclick="exportCSV('quoteFilled')">导出批量填写</button>
+    <button class="btn warn" onclick="toast('当前未报价行 ${unq} 条，已按状态高亮')"><span style="background:#fff;color:var(--amber);border-radius:8px;padding:0 5px;font-size:10px;font-weight:800">${unq}</span> 未报价</button>
+    ${has('quote')?`<button class="btn pri" onclick="openNewInquiry()">新增询价行</button>`:''}`)
+  + filters(`<select><option>报价状态</option><option>有效</option><option>无效</option></select>
+    <input type="date" value="2026-09-21"><input type="date" value="2026-09-28">
+    <input placeholder="型号关键词（顶部搜索框可实时过滤）"><button class="btn pri" onclick="toast('检索完成')">${I.search} 检索</button>`)
+  + `<div class="card"><div class="card-h">客户询价单<span class="hint">点击行展开供应商比价</span><span class="n">${rows.length}</span></div>
+    <table><tr><th>#</th><th>询价单号</th><th>状态</th><th>销售</th><th>型号</th><th>品牌</th><th class="num">数量</th><th class="num">税率</th><th class="num">目标价</th><th class="num">报价</th><th>封装</th><th>批号</th><th>报价状态</th></tr>`+
+    rows.map((r,i)=>`<tr class="row ${state.selInquiry===r.id?'sel':''}" onclick="toggleInq(${r.id})">
+      <td>${i+1}</td><td class="code">${r.no}</td>
+      <td><span class="tag ${r.status==='有效'?'tg-green':'tg-gray'}">${r.status}</span></td>
+      <td>${r.sales}</td><td style="font-weight:600;color:var(--ink)">${r.model}</td><td>${r.brand}</td>
+      <td class="num">${r.qty.toLocaleString()}</td><td class="num">${r.tax.toFixed(1)}%</td>
+      <td class="num">${r.target?'RMB '+fmt(r.target):'—'}</td>
+      <td class="num">${r.quote?fmt(r.quote):'—'}</td><td>${r.pkg}</td><td>${r.dc||'—'}</td>
+      <td><span class="tag ${r.st==='已报价'?'tg-blue':'tg-amber'}">${r.st}</span></td></tr>`).join('')+`</table>
+    ${state.selInquiry?quotePanel(state.inquiries.find(r=>r.id===state.selInquiry)):''}</div>`;
+}
+function toggleInq(id){state.selInquiry=state.selInquiry===id?null:id;render();}
+function quotePanel(r){
+  if(!r.quotes.length)return `<div class="quote-panel"><div class="empty">该询价行暂无供应商回复 —— 点击下方按钮向上游发起采购回复</div>
+    <div style="padding:0 12px 12px">${has('quote')?`<button class="btn pri" onclick="event.stopPropagation();requestQuote(${r.id})">发起采购回复（向 3 家供应商询价）</button>`:''}</div></div>`;
+  const best=Math.min(...r.quotes.map(q=>q.price));
+  return `<div class="quote-panel">
+    <div style="padding:9px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <b>采购回复 · 比价</b><span class="mini">型号 ${r.model} · ${r.quotes.length} 家已回复</span><span style="flex:1"></span>
+      <button class="btn sm" onclick="event.stopPropagation();toast('已生成采购报价趋势图（演示）')">采购报价趋势</button>
+      <button class="btn sm" onclick="event.stopPropagation();toast('已标记无货（演示）')">无货</button>
+    </div>`+
+    r.quotes.map(q=>`<div class="qrow ${q.price===best?'best':''}">
+      <span class="qsup">${q.sup}</span>
+      <span class="mini">批号</span><b>${q.batch}</b>
+      <span class="mini">数量</span><span class="num">${q.qty.toLocaleString()}</span>
+      <span class="mini">采购价</span><b class="num" style="color:${q.price===best?'var(--ok)':'var(--ink)'}">RMB ${fmt(q.price)}</b>
+      <span class="mini">货期</span><span>${q.lead}</span>
+      <span class="mini">建议售价</span><b class="num" style="color:var(--head)">RMB ${fmt(q.price*MARKUP)}</b>
+      ${has('quote')?`<button class="btn sm pri" onclick="event.stopPropagation();pickQuote(${r.id},'${q.sup}')">选用并报价</button>`:''}</div>`).join('')+
+    `<div style="padding:9px 12px"><button class="btn sm ok" onclick="event.stopPropagation();printQuote('${r.no}')">预览 / 打印客户报价单</button>
+    ${has('contract')&&r.quote?`<button class="btn sm pri" onclick="event.stopPropagation();createContractFromInquiry(${r.id})">生成采购合同</button>`:''}</div></div>`;
+}
+function requestQuote(id){
+  const r=state.inquiries.find(x=>x.id===id);
+  r.quotes=r.quotes.length?r.quotes:[{sup:'世康电子',price:+(r.quote*0.9).toFixed(2),qty:r.qty*2,batch:'26+',lead:'3周'},{sup:'泓泽泰电子',price:+(r.quote*0.93).toFixed(2),qty:r.qty,batch:'25+',lead:'2周'}];
+  toast(`已向 ${r.quotes.length} 家供应商发起采购回复，收到报价`);save();render();
+}
+function pickQuote(id,sup){
+  const r=state.inquiries.find(x=>x.id===id);
+  const q=r.quotes.find(x=>x.sup===sup);
+  r.quote=q.price;r.st='已报价';state.salesPrice[r.model]=q.price*MARKUP;
+  logAudit('选用供应商报价',r.model+' @ '+sup);toast(`已选用 ${sup} 报价，建议售价 RMB ${fmt(q.price*MARKUP)}，报价单已更新`);save();render();
+}
+function printQuote(no){
+  const rows=state.inquiries.filter(r=>r.no===no&&r.status==='有效');
+  const total=rows.reduce((s,r)=>s+r.qty*(r.quote||0),0);
+  document.getElementById('printArea').innerHTML=`
+  <div style="font-family:'PingFang SC','Microsoft YaHei',sans-serif;max-width:800px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #2E6FBE;padding-bottom:12px">
+      <div><div style="font-size:26px;font-weight:800;letter-spacing:2px">芯掌柜电子 · 报价单</div><div style="font-size:12px;color:#666;margin-top:4px">报价单号：${no} · 有效期 7 天 · 报价币种：RMB（未注明的为免税价）</div></div>
+      <div style="font-size:12px;color:#666;text-align:right">联系人：王泓元<br>日期：${new Date().toLocaleDateString('zh-CN')}</div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;margin-top:14px;font-size:13px">
+      <tr style="background:#eef3f9">${['型号','品牌','数量','封装','批号','单价 (RMB)','金额'].map(h=>`<th style="border:1px solid #ccc;padding:7px 9px;text-align:left">${h}</th>`).join('')}</tr>
+      ${rows.map(r=>`<tr>${[r.model,r.brand,r.qty.toLocaleString(),r.pkg,r.dc||'—',fmt(r.quote),fmt(r.qty*r.quote)].map(v=>`<td style="border:1px solid #ccc;padding:6px 9px">${v}</td>`).join('')}</tr>`).join('')}
+      <tr><td colspan="6" style="border:1px solid #ccc;padding:7px 9px;text-align:right;font-weight:700">合计</td><td style="border:1px solid #ccc;padding:7px 9px;font-weight:700;font-family:monospace">${fmt(total)}</td></tr>
+    </table>
+    <div style="margin-top:16px;font-size:12px;color:#555;line-height:1.9">
+      备注：1. 以上为现货报价，售出前恕有变动；2. 交期以款到为准；3. 批号以实际出货为准，支持原厂授权渠道溯源。
+    </div>
+  </div>`;
+  window.print();
+}
+function openNewInquiry(){
+  openModal('新增询价行',`<div class="frow"><label>询价单号</label><input id="niNo" value="E${today()}01"></div>
+  <div class="frow"><label>型号</label><input id="niModel" placeholder="如 STM32F407VET6"></div>
+  <div class="frow"><label>品牌</label><input id="niBrand" placeholder="如 ST"></div>
+  <div class="frow"><label>数量</label><input id="niQty" type="number" placeholder="1000"></div>
+  <div class="frow"><label>封装</label><input id="niPkg" placeholder="如 LQFP-100"></div>`,
+  `<button class="btn" onclick="closeModal()">取消</button><button class="btn pri" onclick="saveNewInquiry()">保存</button>`);
+}
+function saveNewInquiry(){
+  const m=document.getElementById('niModel').value.trim(),q=+document.getElementById('niQty').value;
+  if(!m||!q){toast('请填写型号与数量');return;}
+  state.inquiries.push({id:Date.now(),no:document.getElementById('niNo').value,status:'有效',sales:ROLE_DEF[state.role].name,model:m,brand:document.getElementById('niBrand').value||'—',qty:q,tax:0,target:0,quote:0,pkg:document.getElementById('niPkg').value||'—',dc:'',st:'未报价',quotes:[]});
+  closeModal();toast('询价行已新增，可发起采购回复');save();render();
+}
+
+/* ================= 报价：按单 ================= */
+function renderQuote2(){
+  const groups={};
+  state.inquiries.filter(r=>r.status==='有效').forEach(r=>{(groups[r.no]=groups[r.no]||[]).push(r);});
+  return bar(`<span class="crumb">整单维度报价：聚合同一客户询价单下所有行，生成整单报价</span>
+    ${has('quote')?`<button class="btn pri" onclick="toast('整单报价已生成（演示）')">生成整单报价</button>`:''}`)
+  + Object.keys(groups).map(no=>{
+    const g=groups[no];const done=g.filter(r=>r.st==='已报价').length;
+    const amt=g.reduce((s,r)=>s+r.qty*(r.quote||0),0);
+    return `<div class="card"><div class="card-h"><span class="code" style="font-size:13.5px">${no}</span><span class="hint">${g[0].sales} · ${g.length} 行 · 已报价 ${done}/${g.length}</span>
+      <span style="flex:1"></span><span class="tag ${done===g.length?'tg-green':'tg-amber'}">${done===g.length?'可出整单报价':'报价中'}</span>
+      <span class="tag tg-blue">整单金额 ¥ ${fmt(amt)}</span></div>
+    <table><tr><th>型号</th><th>品牌</th><th class="num">数量</th><th class="num">报价</th><th>报价状态</th></tr>
+    ${g.map(r=>`<tr class="row" onclick="go('quote');state.selInquiry=${r.id};render()"><td style="font-weight:600;color:var(--ink)">${r.model}</td><td>${r.brand}</td><td class="num">${r.qty.toLocaleString()}</td><td class="num">${r.quote?fmt(r.quote):'—'}</td><td><span class="tag ${r.st==='已报价'?'tg-blue':'tg-amber'}">${r.st}</span></td></tr>`).join('')}</table></div>`;
+  }).join('');
+}
+
+/* ================= 供应商 ================= */
+function renderSup(){
+  const CREDIT={'世康电子':[300000,46],'泓泽泰电子':[200000,72],'天地昆':[100000,0],'立创商城':[500000,18],'圣禾堂(深圳)电子科技':[300000,35],'深圳市鑫鑫弘辉电子':[100000,95]};
+  return bar(`<button class="btn" onclick="exportCSV('sup')">${I.down} 导出</button>
+    ${has('contract')?`<button class="btn pri" onclick="toast('新增供应商（演示）')">新增供应商</button>`:''}`)
+  + `<div class="card"><div class="card-h">供应商档案 & KPI<span class="hint">KPI = 交期达成率×40% + 质检合格率×40% + 价格竞争力×20% · 拉黑仅总经理可操作</span></div>
+  <table><tr><th>供应商</th><th>类型</th><th>状态</th><th class="num">成交次数</th><th class="num">交期达成率</th><th class="num">质检不良率</th><th style="width:20%">KPI 综合分</th><th class="num">信用额度占用</th><th>操作</th></tr>`+
+  state.suppliers.map(s=>{
+    const col=s.kpi>=85?'var(--ok)':s.kpi>=70?'var(--amber)':'var(--danger)';
+    const cr=CREDIT[s.name]||[0,0];const crWarn=cr[1]>=80;
+    return `<tr class="row"><td style="font-weight:600;color:var(--ink)">${s.name}</td><td>${s.type}</td>
+    <td><span class="tag ${s.status==='在用'?'tg-green':'tg-amber'}">${s.status}</span></td>
+    <td class="num">${s.deals}</td><td class="num">${s.ontime}%</td><td class="num ${s.defect>3?'down':''}">${s.defect}%</td>
+    <td><div class="kbar" style="margin:0"><div class="kt"><div class="kf" style="width:${s.kpi}%;background:${col}"></div></div><span class="kv" style="color:${col};font-weight:700">${s.kpi}</span></div></td>
+    <td class="num"><span class="tag ${crWarn?'tg-red':'tg-blue'}">${cr[1]}%</span> <span class="mini">额度 ¥${(cr[0]/10000).toFixed(0)}万</span></td>
+    <td>${has('all')?(s.status==='在用'?`<button class="btn sm danger" onclick="black('${s.name}')">拉黑</button>`:`<button class="btn sm ok" onclick="unblack('${s.name}')">恢复</button>`):'<span class="mini">—</span>'}</td></tr>`;}).join('')+`</table></div>`;
+}
+function black(name){
+  openModal('拉黑供应商',`<p style="margin-bottom:10px">确认将 <b>${name}</b> 拉入黑名单？拉黑后禁止新建采购合同，操作将记入审计日志。</p>
+  <div class="frow"><label>拉黑原因</label><select id="blkR"><option>疑似假货/翻新</option><option>交期恶劣</option><option>价格异常</option><option>其他</option></select></div>`,
+  `<button class="btn" onclick="closeModal()">取消</button><button class="btn danger" onclick="doBlack('${name}')">确认拉黑</button>`);
+}
+function doBlack(name){const s=state.suppliers.find(x=>x.name===name);s.status='拉黑';closeModal();logAudit('拉黑供应商',name+' · '+document.getElementById('blkR').value);toast(`${name} 已拉黑（原因：${document.getElementById('blkR').value}），审计日志已记录`);save();render();}
+function unblack(name){const s=state.suppliers.find(x=>x.name===name);s.status='在用';toast(`${name} 已恢复在用`);save();render();}
+
+/* ================= 采购合同 ================= */
+function renderContract(){
+  const tabs=['草拟','待审','已审','未到货'];
+  const gf=state.gFilter.toLowerCase();
+  const rows=state.contracts.filter(c=>c.status===state.contractsTab&&(!gf||(c.model+c.brand+c.no).toLowerCase().includes(gf)));
+  const cnt=s=>state.contracts.filter(c=>c.status===s).length;
+  return bar(`<span class="crumb">数量勾稽：合同数量 = 已采购 + 待采购 · 已入库 ≤ 合同数量 · 点击单号看详情</span><span class="spacer"></span>
+    <button class="btn" onclick="exportCSV('contract')">${I.down} 导出明细EXCEL</button>
+    ${has('contract')?`<button class="btn pri" onclick="openNewContract()">新增合同</button>`:''}`)
+  + `<div class="card"><div class="card-h">`+tabs.map(t=>`<span class="tag ${state.contractsTab===t?(t==='待审'?'tg-red':t==='草拟'?'tg-amber':'tg-blue'):'tg-gray'}" style="cursor:pointer" onclick="state.contractsTab='${t}';render()">${t} ${cnt(t)}</span>`).join('')
+  + `<span style="flex:1"></span><span class="hint">采购员：曹珏</span></div>
+  <table><tr><th>采购单号/内部单号</th><th>型号</th><th>品牌</th><th>封装</th><th class="num">合同数量</th><th class="num">已采购</th><th class="num">待采购</th><th class="num">税率</th><th class="num">单价</th><th class="num">金额</th><th>销售员</th><th>交货日期</th><th>操作</th></tr>`+
+  (rows.length?rows.map(c=>{
+    return `<tr class="row"><td class="code" onclick="event.stopPropagation();contractDetail('${c.no}')">${c.no}</td><td style="font-weight:600;color:var(--ink)">${c.model}</td><td>${c.brand}</td><td>${c.pkg}</td>
+    <td class="num">${c.qty.toLocaleString()}</td><td class="num">${c.done.toLocaleString()}</td><td class="num">${(c.qty-c.done).toLocaleString()}</td>
+    <td class="num">${c.tax.toFixed(1)}%</td><td class="num">${fmt(c.price)}</td><td class="num" style="font-weight:700">${fmt(c.price*c.qty)}</td>
+    <td>${c.sales}</td><td>${c.due}</td>
+    <td>${c.status==='草拟'&&has('contract')?`<button class="btn sm pri" onclick="event.stopPropagation();adv('${c.no}','待审')">提交审批</button>`:
+        c.status==='待审'&&has('all')?`<button class="btn sm ok" onclick="event.stopPropagation();adv('${c.no}','已审')">审批通过</button> <button class="btn sm danger" onclick="event.stopPropagation();reject('${c.no}')">驳回</button>`:
+        c.status==='待审'?`<span class="mini">等待总经理审批</span>`:
+        c.status==='已审'&&has('payreq')?`<button class="btn sm warn" onclick="event.stopPropagation();reqPay('${c.no}')">发起付款</button>`:
+        c.status==='已审'?`<span class="tag tg-green">执行中</span>`:`<span class="tag tg-amber">催货</span>`}</td></tr>`;}).join('')
+   :`<tr><td colspan="13"><div class="empty">当前状态下暂无合同</div></td></tr>`)+`</table></div>`;
+}
+function contractDetail(no){
+  const c=state.contracts.find(x=>x.no===no);if(!c)return;
+  openModal('合同详情 · '+no,`
+  <div class="grid2" style="margin-bottom:16px">
+    <span class="gl">型号</span><b>${c.model}</b><span class="gl">品牌 / 封装</span><span>${c.brand} / ${c.pkg}</span>
+    <span class="gl">合同数量</span><span style="font-family:var(--mono)">${c.qty.toLocaleString()}</span><span class="gl">已入库 / 待采购</span><span style="font-family:var(--mono)">${c.done.toLocaleString()} / ${(c.qty-c.done).toLocaleString()}</span>
+    <span class="gl">单价 / 税率</span><span style="font-family:var(--mono)">${fmt(c.price)} RMB / ${c.tax.toFixed(1)}%</span><span class="gl">金额</span><b style="font-family:var(--mono)">¥ ${fmt(c.price*c.qty)}</b>
+    <span class="gl">采购员 / 销售员</span><span>${c.buyer} / ${c.sales}</span><span class="gl">交货日期</span><span>${c.due}</span>
+  </div>
+  <b style="font-size:13px">流转日志</b><div class="tl">${(c.log||[]).map((l,i)=>`<div class="ti ${i===0||l[0].includes('通过')||l[0].includes('入库')?'done':''}"><b>${l[0]}</b><span class="mini">${l[1]}</span></div>`).join('')}</div>`,
+  `<button class="btn" onclick="closeModal()">关闭</button>`,true);
+}
+function adv(no,to){
+  const c=state.contracts.find(x=>x.no===no);c.status=to;
+  c.log=c.log||[];c.log.unshift([to==='待审'?'提交审批':'审批通过',`${ROLE_DEF[state.role].name} ${new Date().toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}`]);
+  logAudit(to==='待审'?'合同提交审批':'合同审批通过',no);toast(to==='待审'?`${no} 已提交审批`:`${no} 审批通过，转入执行`);save();render();
+}
+function reject(no){
+  openModal(`驳回合同 ${no}`,`<div class="frow"><label>驳回原因</label><input id="rjReason" placeholder="必填：如 价格超出比价结果 / 交期不可接受"></div>`,
+  `<button class="btn" onclick="closeModal()">取消</button><button class="btn danger" onclick="doReject('${no}')">确认驳回</button>`);
+}
+function doReject(no){
+  const r=document.getElementById('rjReason').value.trim();
+  if(!r){toast('请填写驳回原因');return;}
+  const c=state.contracts.find(x=>x.no===no);c.status='草拟';c.log.unshift(['驳回退回：'+r,`${ROLE_DEF[state.role].name} 刚刚`]);
+  closeModal();logAudit('合同驳回',no+'：'+r);toast(`${no} 已驳回退回草拟`);save();render();
+}
+function openNewContract(){
+  openModal('新增采购合同',`<div class="frow"><label>型号</label><input id="ncModel" placeholder="如 STM32F103C8T6"></div>
+   <div class="frow"><label>品牌</label><input id="ncBrand" placeholder="如 ST"></div>
+   <div class="frow"><label>数量</label><input id="ncQty" type="number" placeholder="10000"></div>
+   <div class="frow"><label>单价 (RMB)</label><input id="ncPrice" type="number" step="0.0001" placeholder="0.0000"></div>
+   <div class="frow"><label>税率</label><select id="ncTax"><option>13</option><option>0</option></select></div>`,
+  `<button class="btn" onclick="closeModal()">取消</button><button class="btn pri" onclick="saveNewContract()">保存为草拟</button>`);
+}
+function saveNewContract(){
+  const m=document.getElementById('ncModel').value.trim(),b=document.getElementById('ncBrand').value.trim()||'—';
+  const q=+document.getElementById('ncQty').value,p=+document.getElementById('ncPrice').value,t=+document.getElementById('ncTax').value;
+  if(!m||!q||!p){toast('请填写型号、数量与单价');return;}
+  state.contracts.unshift({no:'HT'+today()+String(Math.floor(Math.random()*900)+100),model:m,brand:b,pkg:'—',qty:q,done:0,price:p,cur:'RMB',tax:t,sales:'伍梅花',buyer:'曹珏',due:'2026-10-20',status:'草拟',log:[['草拟创建',ROLE_DEF[state.role].name+' 刚刚']]});
+  closeModal();logAudit('新增采购合同',m);state.contractsTab='草拟';toast('合同草拟已保存');save();render();
+}
+
+/* ================= 交期对比 ================= */
+function renderDelivery(){
+  const rows=state.deliveries;
+  const ok=rows.filter(r=>r.actual<=r.promised).length;
+  const avg=(rows.reduce((s,r)=>s+r.actual-r.promised,0)/rows.length).toFixed(1);
+  return bar(`<span class="crumb">承诺交期 vs 实际交期 · 作为下次选商依据（数据来源于历史到货记录）</span>`)
+  + `<div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+    <div class="kpi"><div class="l">整体交期达成率</div><div class="v" style="color:${ok/rows.length>=.8?'var(--ok)':'var(--amber)'}">${Math.round(ok/rows.length*100)}%</div></div>
+    <div class="kpi"><div class="l">平均提前/延误</div><div class="v">${avg}<small> 天</small></div></div>
+    <div class="kpi"><div class="l">重点跟踪供应商</div><div class="v" style="color:var(--danger);font-size:18px;line-height:1.5">盛鑫弘辉</div></div></div>
+  <div class="card"><table><tr><th>型号</th><th>供应商</th><th class="num">承诺交期(天)</th><th class="num">实际交期(天)</th><th class="num">偏差</th><th>结论</th></tr>`+
+  rows.map(r=>{const d=r.actual-r.promised;return `<tr class="row"><td style="font-weight:600;color:var(--ink)">${r.model}</td><td>${r.sup}</td>
+  <td class="num">${r.promised}</td><td class="num">${r.actual}</td><td class="num" style="color:${d>0?'var(--danger)':d<0?'var(--ok)':'var(--ink2)'};font-weight:700">${d>0?'+':''}${d}</td>
+  <td><span class="tag ${d>2?'tg-red':d>0?'tg-amber':'tg-green'}">${d>2?'严重延误':d>0?'轻微延误':'达成'}</span> <span class="mini">${r.note}</span></td></tr>`;}).join('')+`</table></div>`;
+}
+
+/* ================= 采购利润 / 提成 ================= */
+function profitRows(){
+  return state.contracts.filter(c=>['已审','未到货'].includes(c.status))
+    .map(c=>{const sp=state.salesPrice[c.model]||c.price*MARKUP;return {...c,sp,profit:(sp-c.price)*c.qty,rate:(sp-c.price)/sp*100};});
+}
+function renderProfit(){
+  const gf=state.gFilter.toLowerCase();
+  const rows=profitRows().filter(r=>!gf||(r.model+r.no).toLowerCase().includes(gf));
+  const tp=rows.reduce((s,r)=>s+r.profit,0);
+  return bar(`<span class="crumb">利润 = (建议售价 − 采购价) × 数量 · 建议售价默认采购价 ×1.15，选用比价后自动更新</span><span class="spacer"></span>
+    <button class="btn" onclick="exportCSV('profit')">${I.down} 导出</button>
+    <span class="tag tg-green">合计毛利 ¥ ${fmt(tp)}</span>`)
+  + `<div class="card"><table><tr><th>采购单号</th><th>型号</th><th>采购员</th><th class="num">数量</th><th class="num">采购价</th><th class="num">建议售价</th><th class="num">单行毛利</th><th class="num">行毛利合计</th><th class="num">毛利率</th></tr>`+
+  rows.map(r=>`<tr class="row"><td class="code">${r.no}</td><td style="font-weight:600;color:var(--ink)">${r.model}</td><td>${r.buyer}</td>
+  <td class="num">${r.qty.toLocaleString()}</td><td class="num">${fmt(r.price)}</td><td class="num">${fmt(r.sp)}</td>
+  <td class="num">${fmt(r.sp-r.price)}</td><td class="num" style="font-weight:700;color:var(--ok)">¥ ${fmt(r.profit)}</td>
+  <td class="num"><span class="tag ${r.rate>=12?'tg-green':'tg-amber'}">${r.rate.toFixed(1)}%</span></td></tr>`).join('')+`</table></div>`;
+}
+function renderCommission(){
+  const rows=profitRows();
+  const by={};
+  rows.forEach(r=>{const rate=r.rate>=15?0.08:0.05;(by[r.buyer]=by[r.buyer]||{amt:0,fee:0}).amt+=r.profit;by[r.buyer].fee+=r.profit*rate;});
+  return bar(`<span class="crumb">提成规则：行毛利率 ≥15% 按 8% 提成，其余按 5% · 每月 1 日生成上月提成表</span>`)
+  + `<div class="card"><div class="card-h">本月采购提成表（草稿）</div>
+  <table><tr><th>采购员</th><th class="num">利润额合计</th><th>适用规则</th><th class="num">提成金额</th><th>状态</th></tr>`+
+  Object.keys(by).map(k=>`<tr><td style="font-weight:600;color:var(--ink)">${k}</td><td class="num">¥ ${fmt(by[k].amt)}</td>
+  <td><span class="mini">混合档（5% / 8% 阶梯）</span></td><td class="num" style="font-weight:700;color:var(--ok)">¥ ${fmt(by[k].fee)}</td>
+  <td><span class="tag tg-amber">待财务确认</span></td></tr>`).join('')+`</table></div>
+  <div class="card"><div class="card-h">行级提成明细</div><table><tr><th>采购单号</th><th>型号</th><th class="num">行毛利</th><th class="num">毛利率</th><th class="num">提成比例</th><th class="num">提成</th></tr>`+
+  rows.map(r=>`<tr><td class="code">${r.no}</td><td>${r.model}</td><td class="num">¥ ${fmt(r.profit)}</td>
+  <td class="num">${r.rate.toFixed(1)}%</td><td class="num">${r.rate>=15?'8%':'5%'}</td><td class="num" style="font-weight:700">¥ ${fmt(r.profit*(r.rate>=15?0.08:0.05))}</td></tr>`).join('')+`</table></div>`;
+}
+
+/* ================= 付款管理 ================= */
+function renderPay(){
+  const gf=state.gFilter.toLowerCase();
+  const rows=state.pays.filter(p=>!gf||(p.no+p.contract+p.sup).toLowerCase().includes(gf));
+  return bar(`<span class="crumb">预付/货款申请 → 总经理审批 → 已付款 · 与采购发票核销</span><span class="spacer"></span>
+    <button class="btn" onclick="exportCSV('pay')">${I.down} 导出</button>`)
+  + `<div class="card"><div class="card-h">付款申请<span class="n">${state.pays.filter(p=>p.status==='待审批').length}</span><span class="hint">待审批</span></div>
+  <table><tr><th>申请单号</th><th>类型</th><th>关联合同</th><th>供应商</th><th class="num">金额</th><th>申请人</th><th>日期</th><th>状态</th><th>操作</th></tr>`+
+  rows.map(p=>`<tr class="row"><td class="code">${p.no}</td>
+  <td><span class="tag ${p.type==='预付款'?'tg-amber':'tg-blue'}">${p.type}</span></td>
+  <td class="code" onclick="event.stopPropagation();contractDetail('${p.contract}')">${p.contract}</td><td>${p.sup}</td>
+  <td class="num" style="font-weight:700">¥ ${fmt(p.amount)}</td><td>${p.by}</td><td>${p.date}</td>
+  <td><span class="tag ${p.status==='已付款'?'tg-green':'tg-red'}">${p.status}</span></td>
+  <td>${p.status==='待审批'&&has('all')?`<button class="btn sm ok" onclick="event.stopPropagation();pay('${p.no}')">审批付款</button>`:p.status==='待审批'?'<span class="mini">等待总经理审批</span>':'<span class="mini">已核销</span>'}</td></tr>`).join('')+`</table></div>`;
+}
+function reqPay(no){
+  const c=state.contracts.find(x=>x.no===no);
+  const amount=Math.round(c.qty*c.price*0.3*100)/100;
+  const sup=(state.pending.find(x=>x.contract===no)||{}).sup||'按合同供应商';
+  state.pays.unshift({no:'YF'+today()+String(state.seq.pay++).padStart(3,'0'),contract:no,sup,type:'预付款',amount,status:'待审批',by:ROLE_DEF[state.role].name,date:new Date().toLocaleDateString('zh-CN')});
+  logAudit('发起付款申请',no+' 30%预付');toast(`已对 ${no} 发起预付款申请（合同额 30%），等待总经理审批`);save();render();
+}
+function pay(no){const p=state.pays.find(x=>x.no===no);p.status='已付款';logAudit('付款审批通过',no+' ¥'+fmt(p.amount));toast(`${no} 审批通过，已标记付款 ¥${fmt(p.amount)}`);save();render();}
+
+/* ================= 待入库 / 入库 / 库存 ================= */
+function renderPending(){
+  const gf=state.gFilter.toLowerCase();
+  const rows=state.pending.filter(r=>!gf||(r.model+r.sup+r.contract).toLowerCase().includes(gf));
+  return bar(`<span class="crumb">重点质检合同必须完成品检后方可登记入库</span>`)
+  + `<div class="card"><div class="card-h">待收货清单<span class="n">${rows.length}</span></div>
+  <table><tr><th>关联合同</th><th>型号</th><th>品牌</th><th>供应商</th><th>类型</th><th class="num">数量</th><th>品检</th><th>操作</th></tr>`+
+  rows.map(r=>`<tr class="row"><td class="code">${r.contract}</td><td style="font-weight:600;color:var(--ink)">${r.model}</td><td>${r.brand}</td><td>${r.sup}</td>
+  <td><span class="tag ${r.qc?'tg-red':'tg-gray'}">${r.type}</span></td><td class="num">${r.qty.toLocaleString()}</td>
+  <td>${r.qc?(r.passed?'<span class="tag tg-green">品检通过</span>':`<button class="btn sm warn" onclick="qc(${r.id})">执行品检</button>`):'<span class="mini">免检</span>'}</td>
+  <td>${(!r.qc||r.passed)?(has('inbound')?`<button class="btn sm pri" onclick="registerIn(${r.id})">登记入库</button>`:'<span class="mini">—</span>'):'<span class="mini">品检通过后可入库</span>'}</td></tr>`).join('')+`</table></div>`;
+}
+function qc(id){const r=state.pending.find(x=>x.id===id);r.passed=true;state.qcRecords=state.qcRecords||[];state.qcRecords.unshift({contract:r.contract,model:r.model,sup:r.sup,qty:r.qty,result:'合格',by:'蒙菊',date:new Date().toLocaleDateString('zh-CN'),note:'外观/丝印/批号核验通过'});logAudit('品检通过',r.model);toast(`${r.model} 品检通过（外观 / 丝印 / 批号核验）`);save();render();}
+function registerIn(id){
+  const r=state.pending.find(x=>x.id===id);
+  const no='RK'+today()+String(state.seq.rk++).padStart(5,'0');
+  state.inbound.unshift({no,sup:r.sup,type:r.type,wh:'深圳仓库',buyer:'曹珏',reg:'蒙菊',date:new Date().toLocaleDateString('zh-CN').replace(/\//g,'-'),status:'已入仓'});
+  const c=state.contracts.find(x=>x.no===r.contract);
+  state.stock.unshift({model:r.model,brand:r.brand,pkg:c?c.pkg:'—',lot:'26+',qty:r.qty,wh:'深圳仓库',ref:no,contract:r.contract,price:c?c.price:0});
+  if(c){c.done=Math.min(c.qty,c.done+r.qty);}
+  state.pending=state.pending.filter(x=>x.id!==id);
+  logAudit('登记入库',no+' · '+r.model+' × '+r.qty.toLocaleString());toast(`入库单 ${no} 已登记，库存与合同已勾稽更新`);save();render();
+}
+function renderInbound(){
+  const gf=state.gFilter.toLowerCase();
+  const rows=state.inbound.filter(r=>!gf||(r.no+r.sup+r.type).toLowerCase().includes(gf));
+  return bar(`<button class="btn pri" onclick="go('pending')">新增入库单（从待入库）</button>`)
+  + `<div class="card"><div class="card-h">入库单<span class="hint">编号规则 RK + YYMMDD + 5 位流水</span></div>
+  <table><tr><th>入库单号</th><th>供应商</th><th>类型</th><th>仓库</th><th>采购员</th><th>登记人</th><th>收货日期</th><th>状态</th></tr>`+
+  rows.map(r=>`<tr class="row"><td class="code">${r.no}</td><td>${r.sup}</td>
+  <td><span class="tag ${r.type==='重点质检合同'?'tg-red':'tg-gray'}">${r.type}</span></td><td>${r.wh}</td><td>${r.buyer}</td><td>${r.reg}</td><td>${r.date}</td>
+  <td><span class="tag ${r.status==='已入仓'?'tg-green':'tg-amber'}">${r.status}</span></td></tr>`).join('')+`</table></div>`;
+}
+function renderStock(){
+  const gf=state.gFilter.toLowerCase();
+  const rows=state.stock.filter(r=>!gf||(r.model+r.brand+r.lot).toLowerCase().includes(gf));
+  const total=rows.reduce((s,r)=>s+r.qty,0);
+  return bar(`<span class="crumb">批号级明细，可追溯至入库单与采购合同</span><span class="spacer"></span>
+    <button class="btn" onclick="exportCSV('stock')">${I.down} 导出</button>
+    <span class="tag tg-blue">在库总数量 ${total.toLocaleString()}</span>`)
+  + `<div class="card"><table><tr><th>型号</th><th>品牌</th><th>封装</th><th>批号</th><th class="num">可用数量</th><th>仓库</th><th>来源入库单</th><th class="num">入库单价</th></tr>`+
+  rows.map(r=>`<tr class="row"><td style="font-weight:600;color:var(--ink)">${r.model}</td><td>${r.brand}</td><td>${r.pkg}</td><td><span class="tag tg-blue">${r.lot}</span></td>
+  <td class="num" style="font-weight:700">${r.qty.toLocaleString()}</td><td>${r.wh}</td><td class="code" onclick="event.stopPropagation();trace('${r.ref}')">${r.ref}</td><td class="num">${fmt(r.price)}</td></tr>`).join('')+`</table></div>`;
+}
+function trace(ref){
+  const lot=state.stock.find(s=>s.ref===ref);
+  const ib=state.inbound.find(i=>i.no===ref);
+  openModal('批次追溯 · '+ref,`
+  <div class="tl">
+    <div class="ti done"><b>采购合同 ${lot?lot.contract:'—'}</b><span class="mini">供应商下单 · 单价 ¥ ${lot?fmt(lot.price):'—'}</span></div>
+    <div class="ti ${ib&&ib.status==='已入仓'?'done':''}"><b>入库单 ${ref}</b><span class="mini">${ib?`${ib.sup} · ${ib.wh} · 登记人 ${ib.reg} · ${ib.date} · ${ib.status}`:'历史入库单（演示数据未含）'}</span></div>
+    <div class="ti done"><b>库存批次 ${lot?lot.lot:'26+'}</b><span class="mini">在库 ${lot?lot.qty.toLocaleString():'—'} 件 · ${lot?lot.wh:''}</span></div>
+    <div class="ti"><b>出库（待发生）</b><span class="mini">先进先出策略 · 出库后将关联销售单</span></div>
+  </div>`,`<button class="btn" onclick="closeModal()">关闭</button>`);
+}
+
+/* ================= 统计 ================= */
+function renderStats(){
+  const sup=state.suppliers.filter(s=>s.status==='在用').sort((a,b)=>b.kpi-a.kpi);
+  return bar(`<span class="crumb">数据来源：采购合同 / 询报价 / 入库单（演示数据）</span>`)
+  + `<div class="card"><div class="card-h">月度采购金额（万元）</div><div class="bars">
+  ${[86,102,94,118,129,141].map((v,i)=>`<div class="bar"><span class="bv">${v}</span><div class="col ${i===5?'hot':''}" style="height:${v/141*100}%"></div><span class="bl">${i+5}月</span></div>`).join('')}</div></div>
+  <div class="card"><div class="card-h">品牌采购分布</div><div style="padding:6px 14px 14px">`+
+  [['TI',34],['ADI',26],['ST',18],['infineon',12],['其他',10]].map(([b,v])=>`<div class="kbar"><span class="kn">${b}</span><div class="kt"><div class="kf" style="width:${v}%;background:var(--head)"></div></div><span class="kv">${v}%</span></div>`).join('')+`</div></div>
+  <div class="card"><div class="card-h">供应商 KPI 排行</div><div style="padding:6px 14px 14px">`+
+  sup.map(s=>`<div class="kbar"><span class="kn">${s.name}</span><div class="kt"><div class="kf" style="width:${s.kpi}%;background:${s.kpi>=85?'var(--ok)':'var(--amber)'}"></div></div><span class="kv">${s.kpi}</span></div>`).join('')+`</div></div>`;
+}
+
+/* ================= 销售出库 ================= */
+function renderOrders(){
+  const rows=state.orders||[];
+  const pd=rows.filter(o=>o.status==='待出库').length;
+  const profit=rows.filter(o=>o.status==='已出库').reduce((s,o)=>s+(o.price-o.cost)*o.qty,0);
+  return bar(`<span class="crumb">出库按先进先出（FIFO）扣减库存批次 · 销售毛利 = 售价 − 批次成本</span>`)
+  +`<div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+    <div class="kpi"><div class="l">待出库订单</div><div class="v" style="color:var(--amber)">${pd}<small> 单</small></div></div>
+    <div class="kpi"><div class="l">已出库销售毛利</div><div class="v" style="color:var(--ok)">¥ ${fmt(profit)}</div></div>
+    <div class="kpi"><div class="l">订单总数</div><div class="v">${rows.length}<small> 单</small></div></div></div>
+  <div class="card"><div class="card-h">销售订单<span class="hint">点击出库后库存实时扣减，毛利进入经营看板</span></div>
+  <table><tr><th>销售单号</th><th>客户</th><th>型号</th><th class="num">数量</th><th class="num">售价</th><th class="num">批次成本</th><th class="num">毛利</th><th>状态</th><th>操作</th></tr>`+
+  rows.map(o=>`<tr class="row"><td class="code">${o.no}</td><td>${o.customer}</td><td style="font-weight:600;color:var(--ink)">${o.model}</td>
+  <td class="num">${o.qty.toLocaleString()}</td><td class="num">${fmt(o.price)}</td><td class="num">${fmt(o.cost)}</td>
+  <td class="num" style="color:var(--ok);font-weight:700">¥ ${fmt((o.price-o.cost)*o.qty)}</td>
+  <td><span class="tag ${o.status==='已出库'?'tg-green':'tg-amber'}">${o.status}</span></td>
+  <td>${o.status==='待出库'&&has('inbound')?`<button class="btn sm pri" onclick="doOutbound('${o.no}')">出库扣减</button>`:o.status==='待出库'?'<span class="mini">待仓管出库</span>':'<span class="mini">—</span>'}</td></tr>`).join('')+`</table></div>`;
+}
+function doOutbound(no){
+  const o=state.orders.find(x=>x.no===no);
+  const lots=state.stock.filter(s=>s.model===o.model&&s.qty>0);
+  const avail=lots.reduce((s,l)=>s+l.qty,0);
+  if(avail<o.qty){toast(`出库失败：${o.model} 在库 ${avail.toLocaleString()}，不足 ${o.qty.toLocaleString()}`);return;}
+  let need=o.qty;
+  lots.forEach(l=>{const take=Math.min(l.qty,need);l.qty-=take;need-=take;});
+  o.status='已出库';
+  logAudit('销售出库',no+' · '+o.model+' × '+o.qty.toLocaleString()+'（FIFO）');
+  toast(`${no} 已出库，${o.model} 库存按 FIFO 扣减 ${o.qty.toLocaleString()} 件`);save();render();
+}
+
+/* ================= 品检管理 ================= */
+function renderQc(){
+  const recs=state.qcRecords||[];
+  return bar(`<span class="crumb">重点质检合同收货时强制品检 · 不合格可发起采购退货</span>`)
+  +`<div class="card"><div class="card-h">品检记录<span class="n">${recs.length}</span></div>
+  <table><tr><th>关联合同</th><th>型号</th><th>供应商</th><th>结论</th><th>品检员</th><th>日期</th><th>备注</th><th>操作</th></tr>`+
+  (recs.length?recs.map((q,i)=>`<tr class="row"><td class="code">${q.contract}</td><td style="font-weight:600;color:var(--ink)">${q.model}</td><td>${q.sup}</td>
+  <td><span class="tag ${q.result==='合格'?'tg-green':'tg-red'}">${q.result}</span></td><td>${q.by}</td><td>${q.date}</td><td class="mini">${q.note}</td>
+  <td>${q.result==='不合格'&&!q.returned?`<button class="btn sm danger" onclick="reqReturn(${i})">发起采购退货</button>`:(q.returned?'<span class="tag tg-amber">已退货</span>':'<span class="mini">—</span>')}</td></tr>`).join('')
+  :`<tr><td colspan="8"><div class="empty">暂无品检记录 —— 在「待入库」对重点质检合同执行品检后自动生成</div></td></tr>`)+`</table></div>`
+  +`<div class="card"><div class="card-h">采购退货单<span class="n">${(state.returns||[]).length}</span><span class="hint">品检不合格 → 退货，冲减库存与应付</span></div>
+  <table><tr><th>退货单号</th><th>关联合同</th><th>型号</th><th>供应商</th><th class="num">数量</th><th>原因</th><th>日期</th><th>状态</th></tr>`+
+  ((state.returns||[]).length?state.returns.map(t=>`<tr class="row"><td class="code">${t.no}</td><td class="code">${t.contract}</td><td style="font-weight:600;color:var(--ink)">${t.model}</td><td>${t.sup}</td><td class="num">${t.qty?t.qty.toLocaleString():'—'}</td><td class="mini">${t.reason}</td><td>${t.date}</td><td><span class="tag ${t.status==='已退货'?'tg-gray':'tg-amber'}">${t.status}</span></td></tr>`).join('')
+  :`<tr><td colspan="8"><div class="empty">暂无退货单 —— 品检不合格发起退货后自动生成</div></td></tr>`)+`</table></div>`;
+}
+function reqReturn(i){
+  const q=state.qcRecords[i];q.returned=true;
+  state.returns=state.returns||[];
+  const no='TH'+today()+String(state.seq.th++).padStart(3,'0');
+  state.returns.unshift({no,contract:q.contract,model:q.model,sup:q.sup,qty:q.qty||0,reason:'品检不合格：'+(q.note||'外观/批号异常'),date:new Date().toLocaleDateString('zh-CN'),status:'退货在途'});
+  logAudit('发起采购退货',q.model+' · '+no);
+  toast(`退货单 ${no} 已生成，冲减库存与应付`);save();render();
+}
+
+/* ================= 审计日志 ================= */
+function renderAudit(){
+  const recs=state.audit||[];
+  return bar(`<span class="crumb">全部关键操作留痕，不可删除 · 仅总经理可见</span>`)
+  +`<div class="card"><div class="card-h">审计日志<span class="n">${recs.length}</span><span class="hint">登录 / 审批 / 入库 / 出库 / 报价 / 拉黑 / 付款 全量留痕</span></div>
+  <table><tr><th style="width:130px">时间</th><th style="width:90px">操作人</th><th style="width:140px">操作</th><th>对象 / 明细</th></tr>`+
+  (recs.length?recs.map(r=>`<tr class="row"><td class="num" style="text-align:left">${r.t}</td><td>${r.u}</td><td><span class="tag tg-blue">${r.a}</span></td><td>${r.d}</td></tr>`).join('')
+  :`<tr><td colspan="4"><div class="empty">暂无操作记录 —— 执行审批 / 入库 / 拉黑等动作后自动留痕</div></td></tr>`)+`</table></div>`;
+}
+
+/* ================= 询价生成合同 ================= */
+function createContractFromInquiry(id){
+  const r=state.inquiries.find(x=>x.id===id);
+  if(!r||!r.quote){toast('请先选用供应商报价后再生成合同');return;}
+  const no='HT'+today()+String(Math.floor(Math.random()*900)+100);
+  state.contracts.unshift({no,model:r.model,brand:r.brand,pkg:r.pkg||'—',qty:r.qty,done:0,price:r.quote,cur:'RMB',tax:13,sales:r.sales,buyer:'曹珏',due:'2026-10-20',status:'草拟',log:[['由询价 '+r.no+' 生成',ROLE_DEF[state.role].name+' 刚刚']]});
+  logAudit('询价生成合同',r.model+' @ RMB'+fmt(r.quote));
+  toast(`已从询价生成采购合同 ${no}（草拟），可提交审批`);save();go('contract');
+}
+
+/* ================= 共享报价 / 采购商机 ================= */
+function renderShare(){
+  const rows=state.shared||[];
+  return bar(`<span class="crumb">团队共享优势货源与价格 · 认领后联系发布人锁定 · 避免撞单</span><span class="spacer"></span>
+    ${has('quote')?`<button class="btn pri" onclick="openShareNew()">发布共享货源</button>`:''}`)
+  +`<div class="card"><div class="card-h">共享货源池<span class="n">${rows.filter(s=>!s.claimed).length}</span><span class="hint">可认领</span></div>
+  <table><tr><th>型号</th><th>品牌</th><th class="num">数量</th><th class="num">共享价</th><th>批号</th><th>货期</th><th>发布人</th><th>日期</th><th>状态</th><th>操作</th></tr>`+
+  rows.map((s,i)=>`<tr class="row ${s.claimed?'sel':''}"><td style="font-weight:600;color:var(--ink)">${s.model}</td><td>${s.brand}</td><td class="num">${s.qty.toLocaleString()}</td><td class="num">RMB ${fmt(s.price)}</td><td><span class="tag tg-blue">${s.batch}</span></td><td>${s.lead}</td><td>${s.by}</td><td>${s.date}</td>
+  <td><span class="tag ${s.claimed?'tg-gray':'tg-green'}">${s.claimed?'已被认领':'可认领'}</span></td>
+  <td>${!s.claimed&&has('quote')?`<button class="btn sm pri" onclick="claim(${i})">认领</button>`:'<span class="mini">—</span>'}</td></tr>`).join('')+`</table></div>`;
+}
+function claim(i){const s=state.shared[i];s.claimed=true;logAudit('认领共享货源',s.model+' @ RMB'+fmt(s.price)+'（发布人 '+s.by+'）');toast(`已认领 ${s.model}，请及时联系 ${s.by} 锁定货源`);save();render();}
+function openShareNew(){
+  openModal('发布共享货源',`<div class="frow"><label>型号</label><input id="shModel" placeholder="如 STM32F103C8T6"></div>
+  <div class="frow"><label>品牌</label><input id="shBrand" placeholder="如 ST"></div>
+  <div class="frow"><label>数量</label><input id="shQty" type="number" placeholder="5000"></div>
+  <div class="frow"><label>共享价 (RMB)</label><input id="shPrice" type="number" step="0.0001" placeholder="0.0000"></div>
+  <div class="frow"><label>批号</label><input id="shBatch" value="26+"></div>`,
+  `<button class="btn" onclick="closeModal()">取消</button><button class="btn pri" onclick="saveShare()">发布</button>`);
+}
+function saveShare(){
+  const m=document.getElementById('shModel').value.trim(),q=+document.getElementById('shQty').value,p=+document.getElementById('shPrice').value;
+  if(!m||!q||!p){toast('请填写型号、数量与价格');return;}
+  state.shared=state.shared||[];
+  state.shared.unshift({model:m,brand:document.getElementById('shBrand').value||'—',qty:q,price:p,batch:document.getElementById('shBatch').value||'26+',lead:'现货',by:ROLE_DEF[state.role].name,date:new Date().toLocaleDateString('zh-CN')});
+  closeModal();logAudit('发布共享货源',m);toast('共享货源已发布，团队可见');save();render();
+}
+function oppRows(){
+  const rows=[];
+  state.inquiries.filter(r=>r.status==='有效'&&r.st==='未报价').forEach(r=>rows.push({type:'询价未成交',model:r.model,brand:r.brand,qty:r.qty,ref:'询价单 '+r.no,act:'quote',id:r.id}));
+  (state.shared||[]).filter(s=>!s.claimed).forEach(s=>rows.push({type:'团队共享货源',model:s.model,brand:s.brand,qty:s.qty,ref:'发布人 '+s.by,act:'share'}));
+  rows.push({type:'需采购型号',model:'XL-5050RGBC-2812B',brand:'XINGLIGHT(成兴光)',qty:36010,ref:'在途合同 CG260924036',act:'none'});
+  return rows;
+}
+function renderOpp(){
+  const rows=oppRows();
+  return bar(`<span class="crumb">询价未成交 + 团队共享货源 + 需采购型号 聚合撮合，形成商机池</span>`)
+  +`<div class="card"><div class="card-h">商机池<span class="n">${rows.length}</span></div>
+  <table><tr><th>类型</th><th>型号</th><th>品牌</th><th class="num">数量</th><th>关联</th><th>操作</th></tr>`+
+  rows.map(o=>`<tr class="row"><td><span class="tag ${o.type==='询价未成交'?'tg-amber':o.type==='团队共享货源'?'tg-green':'tg-blue'}">${o.type}</span></td>
+  <td style="font-weight:600;color:var(--ink)">${o.model}</td><td>${o.brand}</td><td class="num">${o.qty.toLocaleString()}</td><td class="mini">${o.ref}</td>
+  <td>${o.act==='quote'?`<button class="btn sm pri" onclick="go('quote');state.selInquiry=${o.id};render()">去报价</button>`:o.act==='share'?`<button class="btn sm ok" onclick="go('share')">查看货源</button>`:'<span class="mini">已在途</span>'}</td></tr>`).join('')+`</table></div>`;
+}
+
+/* ================= 财务：应付应收 / 发票 ================= */
+function renderFinance(){
+  const ap=state.ap||[],ar=state.ar||[];
+  const apT=ap.reduce((s,a)=>s+a.amt,0),arT=ar.reduce((s,a)=>s+a.amt,0);
+  return bar(`<span class="crumb">应付按供应商 · 应收按客户 · 账龄 = 单据日期距今天数</span><span class="spacer"></span>
+    <button class="btn" onclick="exportCSV('finance')">${I.down} 导出</button>`)
+  +`<div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+    <div class="kpi"><div class="l">应付账款合计</div><div class="v" style="color:var(--danger)">¥ ${fmt(apT)}</div></div>
+    <div class="kpi"><div class="l">应收账款合计</div><div class="v" style="color:var(--ok)">¥ ${fmt(arT)}</div></div>
+    <div class="kpi"><div class="l">净头寸（应收−应付）</div><div class="v">¥ ${fmt(arT-apT)}</div></div></div>
+  <div class="card"><div class="card-h">应付账款（按供应商）</div><table><tr><th>供应商</th><th>账龄</th><th class="num">应付金额</th><th>预警</th></tr>`+
+  ap.map(a=>`<tr class="row"><td style="font-weight:600;color:var(--ink)">${a.sup}</td><td><span class="tag ${a.aging==='60+'?'tg-red':a.aging==='31-60'?'tg-amber':'tg-green'}">${a.aging==='60+'?'60天以上':a.aging==='31-60'?'31-60天':'0-30天'}</span></td><td class="num">¥ ${fmt(a.amt)}</td><td>${a.aging==='60+'?'<span class="mini down">优先安排付款</span>':'<span class="mini">—</span>'}</td></tr>`).join('')+`</table></div>
+  <div class="card"><div class="card-h">应收账款（按客户）</div><table><tr><th>客户</th><th>账龄</th><th class="num">应收金额</th></tr>`+
+  ar.map(a=>`<tr class="row"><td style="font-weight:600;color:var(--ink)">${a.cust}</td><td><span class="tag ${a.aging==='31-60'?'tg-amber':'tg-green'}">${a.aging==='31-60'?'31-60天':'0-30天'}</span></td><td class="num">¥ ${fmt(a.amt)}</td></tr>`).join('')+`</table></div>`;
+}
+function missInvoices(){
+  const invC=new Set((state.invoices||[]).map(i=>i.contract));
+  const out=[];const seen=new Set();
+  state.pays.filter(p=>p.status==='已付款').forEach(p=>{if(!invC.has(p.contract)&&!seen.has(p.contract)){seen.add(p.contract);out.push(p);}});
+  return out;
+}
+function renderInvoice(){
+  const inv=state.invoices||[];const miss=missInvoices();
+  const invT=inv.reduce((s,i)=>s+i.amount,0);
+  return bar(`<span class="crumb">收票登记 → 与付款核销 · 缺票影响进项抵扣</span><span class="spacer"></span>
+    ${has('invoice')?`<button class="btn pri" onclick="openRegInvoice()">登记发票</button>`:''}`)
+  +(miss.length?`<div class="card" style="border-left:4px solid var(--danger)"><div class="card-h" style="border-bottom:1px solid var(--line)">缺票预警<span class="n">${miss.length}</span><span class="hint">已付款未收票合同</span></div><table><tr><th>合同</th><th>供应商</th><th class="num">已付金额</th><th>操作</th></tr>${miss.map(p=>`<tr class="row"><td class="code">${p.contract}</td><td>${p.sup}</td><td class="num">¥ ${fmt(p.amount)}</td><td>${has('invoice')?`<button class="btn sm warn" onclick="openRegInvoice('${p.contract}')">登记收票</button>`:'<span class="mini">待财务登记</span>'}</td></tr>`).join('')}</table></div>`:'')
+  +`<div class="card"><div class="card-h">发票台账<span class="n">${inv.length}</span><span class="hint">已收票 ¥ ${fmt(invT)}</span></div>
+  <table><tr><th>发票号</th><th>类型</th><th>关联合同</th><th>供应商</th><th class="num">金额</th><th>收票日期</th><th>核销状态</th></tr>`+
+  (inv.length?inv.map(i=>`<tr class="row"><td class="code">${i.no}</td><td><span class="tag ${i.type.includes('专')?'tg-blue':'tg-gray'}">${i.type}</span></td><td class="code">${i.contract}</td><td>${i.sup}</td><td class="num">¥ ${fmt(i.amount)}</td><td>${i.date}</td><td><span class="tag tg-green">已核销</span></td></tr>`).join(''):`<tr><td colspan="7"><div class="empty">暂无发票记录</div></td></tr>`)+`</table></div>`;
+}
+function openRegInvoice(contract){
+  const cs=contract?[contract]:[...new Set(state.pays.filter(p=>p.status==='已付款').map(p=>p.contract))];
+  openModal('登记采购发票',`<div class="frow"><label>关联合同</label><select id="ivContract">${cs.map(c=>`<option>${c}</option>`).join('')}</select></div>
+  <div class="frow"><label>发票类型</label><select id="ivType"><option>增值税专票</option><option>增值税普票</option></select></div>
+  <div class="frow"><label>金额</label><input id="ivAmt" type="number" step="0.01" placeholder="按票面金额填写"></div>`,
+  `<button class="btn" onclick="closeModal()">取消</button><button class="btn pri" onclick="saveInvoice()">保存并核销</button>`);
+}
+function saveInvoice(){
+  const c=document.getElementById('ivContract').value,a=+document.getElementById('ivAmt').value;
+  if(!a){toast('请填写票面金额');return;}
+  const payRow=state.pays.find(p=>p.contract===c&&p.status==='已付款');
+  state.invoices=state.invoices||[];
+  state.invoices.unshift({no:'FP'+today()+String(state.seq.th++).padStart(3,'0'),contract:c,sup:payRow?payRow.sup:'按合同',type:document.getElementById('ivType').value,amount:a,date:new Date().toLocaleDateString('zh-CN')});
+  closeModal();logAudit('登记采购发票',c+' ¥'+fmt(a));toast(`发票已登记并与 ${c} 付款完成核销`);save();render();
+}
+
+/* ================= CSV 导出 ================= */
+function exportCSV(kind){
+  let name='导出',head=[],data=[];
+  if(kind==='quote'||kind==='quoteFilled'){
+    name=kind==='quote'?'客户需求':'批量填写';
+    head=['询价单号','状态','销售','型号','品牌','数量','税率','目标价','报价','封装','批号','报价状态'];
+    data=state.inquiries.map(r=>[r.no,r.status,r.sales,r.model,r.brand,r.qty,r.tax+'%',r.target||'',r.quote||'',r.pkg,r.dc,r.st]);
+  }else if(kind==='contract'){
+    name='采购合同明细';head=['单号','型号','品牌','封装','合同数量','已入库','待采购','税率','单价','金额','销售员','交货日期','状态'];
+    data=state.contracts.map(c=>[c.no,c.model,c.brand,c.pkg,c.qty,c.done,c.qty-c.done,c.tax+'%',c.price,(c.price*c.qty).toFixed(2),c.sales,c.due,c.status]);
+  }else if(kind==='profit'){
+    name='采购利润';const rows=profitRows();
+    head=['采购单号','型号','数量','采购价','建议售价','行毛利','毛利率'];
+    data=rows.map(r=>[r.no,r.model,r.qty,r.price,r.sp.toFixed(4),r.profit.toFixed(2),(r.rate*100).toFixed(1)+'%']);
+  }else if(kind==='stock'){
+    name='库存明细';head=['型号','品牌','封装','批号','数量','仓库','来源入库单','入库单价'];
+    data=state.stock.map(r=>[r.model,r.brand,r.pkg,r.lot,r.qty,r.wh,r.ref,r.price]);
+  }else if(kind==='sup'){
+    name='供应商';head=['供应商','类型','状态','成交次数','交期达成率','质检不良率','KPI'];
+    data=state.suppliers.map(s=>[s.name,s.type,s.status,s.deals,s.ontime+'%',s.defect+'%',s.kpi]);
+  }else if(kind==='finance'){
+    name='应付应收';head=['类型','对象','账龄','金额'];
+    data=[...(state.ap||[]).map(a=>['应付',a.sup,a.aging,a.amt]),...(state.ar||[]).map(a=>['应收',a.cust,a.aging,a.amt])];
+  }else if(kind==='pay'){
+    name='付款申请';head=['申请单号','类型','关联合同','供应商','金额','申请人','日期','状态'];
+    data=state.pays.map(p=>[p.no,p.type,p.contract,p.sup,p.amount,p.by,p.date,p.status]);
+  }
+  const csv='\ufeff'+[head.join(','),...data.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','))].join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download=`芯掌柜-${name}-${today()}.csv`;a.click();
+  toast(`已导出 ${name}.csv（${data.length} 行，Excel/WPS 可直接打开）`);
+}
+
+/* ================= 弹窗/搜索 ================= */
+function openModal(t,body,foot,wide){
+  const m=document.getElementById('modal');
+  m.className='modal'+(wide?' wide':'');
+  m.innerHTML=`<div class="mh">${t}<span class="x" onclick="closeModal()">×</span></div><div class="mb">${body}</div><div class="mf">${foot}</div>`;
+  document.getElementById('mask').classList.add('show');
+}
+function closeModal(){document.getElementById('mask').classList.remove('show');}
+function globalSearch(v){state.gFilter=v;if(['quote','contract','pending','inbound','stock','pay','profit'].includes(state.page))render();}
+
+/* ================= 启动 ================= */
+document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement.tagName!=='INPUT'){e.preventDefault();document.getElementById('gs').focus();}});
+</script>
+</body>
+</html>
